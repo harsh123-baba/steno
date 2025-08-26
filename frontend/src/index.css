@@ -2,9 +2,10 @@
 
 @font-face {
   font-family: 'Kruti Dev 010';
-  src: url('https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/krutidev/KrutiDev010-Regular.ttf') format('truetype');
+  src: url('./krutidev010.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -40,24 +41,30 @@ body {
 }
 
 /* Hindi input support */
-textarea[lang="hi"], input[lang="hi"], [contenteditable] {
-  font-family: 'Kruti Dev 010', 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+textarea, input[lang="hi"], [contenteditable] {
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+/* Kruti Dev specific styling */
+textarea[style*="Kruti Dev 010"], input[style*="Kruti Dev 010"] {
+  font-family: 'Kruti Dev 010', monospace !important;
   font-size: 18px;
-  line-height: 1.6;
-  ime-mode: active;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
 }
 
 /* Rich text editor styles */
-[contenteditable]:empty:before {
-  content: attr(data-placeholder);
-  color: #999;
-  font-style: italic;
-}
-
-[contenteditable]:focus {
+textarea:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Ensure Kruti Dev renders properly */
+.kruti-font {
+  font-family: 'Kruti Dev 010', monospace !important;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
 }
 
 a {

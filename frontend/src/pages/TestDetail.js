@@ -41,9 +41,10 @@ const audioStyle = {
 
 const getEditorStyle = (fontFamily) => ({
   width: '100%',
-  fontFamily: fontFamily || 'Kruti Dev 010',
+  fontFamily: fontFamily === 'Kruti Dev 010' ? 'Kruti Dev 010, monospace' : fontFamily,
   fontSize: '18px',
-  lineHeight: '1.6',
+  lineHeight: fontFamily === 'Kruti Dev 010' ? '1.8' : '1.6',
+  letterSpacing: fontFamily === 'Kruti Dev 010' ? '0.5px' : 'normal',
   padding: '1rem',
   borderRadius: '4px',
   border: '2px solid #3498db',
@@ -151,8 +152,6 @@ const TestDetail = () => {
     setTimerActive(true);
   };
 
-
-
   const formatText = (command, value = null) => {
     document.execCommand(command, false, value);
   };
@@ -203,11 +202,6 @@ const TestDetail = () => {
     if (e && e.preventDefault) e.preventDefault();
     if (submitted) return;
     
-    // if (!typedText.trim()) {
-    //   alert('कृपया कुछ टेक्स्ट टाइप करें (Please type some text)');
-    //   return;
-    // }
-    
     console.log('Submitting:', { typedText: typedText.trim(), timeTaken: elapsed, testId: id });
     
     try {
@@ -245,7 +239,6 @@ const TestDetail = () => {
         </div>
       )}
 
-    
       {timerActive && !submitted && (
         <div style={overlayStyle}>
           <h2>{name}</h2>
@@ -280,26 +273,19 @@ const TestDetail = () => {
                 20px
               </button>
             </div>
-            {useTransliteration && selectedFont !== 'Kruti Dev 010' ? (
-              <ReactTransliterate
-                value={typedText}
-                onChangeText={setTypedText}
-                lang="hi"
-                style={getEditorStyle(selectedFont)}
-                placeholder="Type in English, get Hindi (e.g., 'namaste' → 'नमस्ते')"
-                autoFocus
-              />
-            ) : (
-              <textarea
-                ref={editorRef}
-                value={typedText}
-                onChange={(e) => setTypedText(e.target.value)}
-                onKeyDown={selectedFont === 'Kruti Dev 010' && useTransliteration ? handleKrutiInput : handleKeyDown}
-                style={getEditorStyle(selectedFont)}
-                autoFocus
-                placeholder={selectedFont === 'Kruti Dev 010' && useTransliteration ? "Type with Kruti keyboard (a=क, s=े, d=्, etc.)" : "Direct typing..."}
-              />
-            )}
+            <textarea
+              ref={editorRef}
+              value={typedText}
+              onChange={(e) => setTypedText(e.target.value)}
+              onKeyDown={handleKrutiInput}  // Added Kruti keyboard input handling
+              style={getEditorStyle(selectedFont)}
+              className={selectedFont === 'Kruti Dev 010' ? 'kruti-font' : ''}
+              autoFocus
+              placeholder={selectedFont === 'Kruti Dev 010' ? "Enable Hindi keyboard in your system settings to type" : "Type here..."}
+              lang="hi"
+              inputMode="text"
+              spellCheck={false}
+            />
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <button type="submit" style={buttonStyle}>
                 Submit (जमा करें)
@@ -311,6 +297,7 @@ const TestDetail = () => {
           </form>
         </div>
       )}
+      
       {submitted && result && (
         <div style={containerStyle}>
           <div style={cardStyle}>
