@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api';
+import { ReactTransliterate } from "react-transliterate";
+import "react-transliterate/dist/index.css";
 
 const containerStyle = {
   padding: '1rem',
@@ -37,14 +39,38 @@ const audioStyle = {
   margin: '1rem 0'
 };
 
-const textareaStyle = {
+const getEditorStyle = (fontFamily) => ({
   width: '100%',
-  fontFamily: 'Noto Sans Devanagari, sans-serif',
-  padding: '0.5rem',
+  fontFamily: fontFamily || 'Kruti Dev 010',
+  fontSize: '18px',
+  lineHeight: '1.6',
+  padding: '1rem',
   borderRadius: '4px',
-  border: '1px solid #ccc',
+  border: '2px solid #3498db',
   marginBottom: '1rem',
-  height: '200px'
+  height: '200px',
+  resize: 'vertical',
+  backgroundColor: '#fff',
+  outline: 'none'
+});
+
+const toolbarStyle = {
+  display: 'flex',
+  gap: '0.5rem',
+  marginBottom: '0.5rem',
+  padding: '0.5rem',
+  backgroundColor: '#f8f9fa',
+  borderRadius: '4px',
+  border: '1px solid #dee2e6'
+};
+
+const toolButtonStyle = {
+  padding: '0.25rem 0.5rem',
+  border: '1px solid #ccc',
+  borderRadius: '3px',
+  backgroundColor: '#fff',
+  cursor: 'pointer',
+  fontSize: '14px'
 };
 
 const buttonStyle = {
@@ -75,6 +101,9 @@ const TestDetail = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [timeLimitState, setTimeLimitState] = useState(0);
+  const [selectedFont, setSelectedFont] = useState('Kruti Dev 010');
+  const [useTransliteration, setUseTransliteration] = useState(true);
+  const editorRef = useRef(null);
 
   // Fetch test data and load audio
   useEffect(() => {
@@ -122,23 +151,78 @@ const TestDetail = () => {
     setTimerActive(true);
   };
 
-  const handleTextChange = (e) => {
-    setTypedText(e.target.value);
+
+
+  const formatText = (command, value = null) => {
+    document.execCommand(command, false, value);
+  };
+
+  const handleFontChange = (fontName) => {
+    setSelectedFont(fontName);
+    if (editorRef.current) {
+      editorRef.current.style.fontFamily = fontName;
+    }
+  };
+
+  // Kruti Dev 010 keyboard mapping
+  const krutiMapping = {
+    'a': 'क', 'b': 'व', 'c': 'अ', 'd': '्', 'e': 'आ', 'f': 'इ', 'g': 'उ', 'h': 'फ',
+    'i': 'ग', 'j': 'र', 'k': 'क', 'l': 'त', 'm': 'स', 'n': 'ल', 'o': 'य', 'p': 'ज',
+    'q': 'औ', 'r': 'ी', 's': 'े', 't': 'ू', 'u': 'ह', 'v': 'न', 'w': 'ै', 'x': 'ं',
+    'y': 'ब', 'z': 'ए', 'A': 'ओ', 'B': 'ऊ', 'C': 'ण', 'D': 'अं', 'E': 'ध', 'F': 'ऋ',
+    'G': 'ख', 'H': 'घ', 'I': 'छ', 'J': 'झ', 'K': 'ख', 'L': 'थ', 'M': 'श', 'N': 'ळ',
+    'O': 'द', 'P': 'च', 'Q': 'ऑ', 'R': 'ऐ', 'S': 'ो', 'T': 'ऊ', 'U': 'ङ', 'V': 'ऩ',
+    'W': 'ॉ', 'X': 'ँ', 'Y': 'भ', 'Z': 'एँ', '1': '१', '2': '२', '3': '३', '4': '४',
+    '5': '५', '6': '६', '7': '७', '8': '८', '9': '९', '0': '०', '/': 'य', '?': 'य्',
+    '<': 'ष', '>': '।', '[': 'ड', ']': 'ढ', '{': 'ड़', '}': 'ढ़', '|': 'ॐ', ';': 'प',
+    ':': 'प्', "'": 'ट', '"': 'ठ', ',': ',', '.': '.', '!': '!', '@': 'ॅ', '#': '्र',
+    '$': 'र्', '%': 'ज्ञ', '^': 'त्र', '&': 'श्र', '*': 'द्व', '(': '(', ')': ')'
+  };
+
+  const handleKrutiInput = (e) => {
+    if (selectedFont === 'Kruti Dev 010' && useTransliteration) {
+      const char = e.key;
+      if (krutiMapping[char]) {
+        e.preventDefault();
+        const newText = typedText + krutiMapping[char];
+        setTypedText(newText);
+      }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      const allowedKeys = ['a', 'c', 'v', 'x', 'z', 'y'];
+      if (!allowedKeys.includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (submitted) return;
+    
+    // if (!typedText.trim()) {
+    //   alert('कृपया कुछ टेक्स्ट टाइप करें (Please type some text)');
+    //   return;
+    // }
+    
+    console.log('Submitting:', { typedText: typedText.trim(), timeTaken: elapsed, testId: id });
+    
     try {
-      const { data } = await api.post(`/tests/${id}/submit`, {
-        typedText,
+      const response = await api.post(`/tests/${id}/submit`, {
+        typedText: typedText.trim(),
         timeTaken: elapsed
       });
-      setResult(data);
+      console.log('Submit response:', response.data);
+      setResult(response.data);
       setTimerActive(false);
       setSubmitted(true);
     } catch (err) {
-      console.error(err);
+      console.error('Submit error:', err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || 'Submission failed';
+      alert(`सबमिशन में त्रुटि: ${errorMsg}`);
     }
   };
 
@@ -157,25 +241,73 @@ const TestDetail = () => {
             />
             <p><strong>Category:</strong> {category.toUpperCase()}</p>
             <p><strong>Time Limit:</strong> {timeLimitState}s</p>
-            <p><strong>Timer:</strong> {elapsed}s</p>
           </div>
         </div>
       )}
+
+    
       {timerActive && !submitted && (
         <div style={overlayStyle}>
           <h2>{name}</h2>
-          <p><strong>Timer:</strong> {elapsed}s / {timeLimitState}s</p>
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <textarea
-              rows="10"
-              value={typedText}
-              onChange={handleTextChange}
-              required
-              style={textareaStyle}
-            />
-            <button type="submit" style={buttonStyle}>
-              Submit
-            </button>
+          <p style={{ fontSize: '18px', marginBottom: '1rem' }}><strong>Timer:</strong> {elapsed}s / {timeLimitState}s</p>
+          <p style={{ marginBottom: '1rem', color: '#7f8c8d' }}>हिंदी में टाइप करें (Type in Hindi):</p>
+          <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '800px' }}>
+            <div style={toolbarStyle}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '14px' }}>
+                <input 
+                  type="checkbox" 
+                  checked={useTransliteration}
+                  onChange={(e) => setUseTransliteration(e.target.checked)}
+                />
+                {selectedFont === 'Kruti Dev 010' ? 'Kruti Typing' : 'Hindi Typing'}
+              </label>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('bold')}>
+                <strong>B</strong>
+              </button>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('italic')}>
+                <em>I</em>
+              </button>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('underline')}>
+                <u>U</u>
+              </button>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('fontSize', '16px')}>
+                16px
+              </button>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('fontSize', '18px')}>
+                18px
+              </button>
+              <button type="button" style={toolButtonStyle} onClick={() => formatText('fontSize', '20px')}>
+                20px
+              </button>
+            </div>
+            {useTransliteration && selectedFont !== 'Kruti Dev 010' ? (
+              <ReactTransliterate
+                value={typedText}
+                onChangeText={setTypedText}
+                lang="hi"
+                style={getEditorStyle(selectedFont)}
+                placeholder="Type in English, get Hindi (e.g., 'namaste' → 'नमस्ते')"
+                autoFocus
+              />
+            ) : (
+              <textarea
+                ref={editorRef}
+                value={typedText}
+                onChange={(e) => setTypedText(e.target.value)}
+                onKeyDown={selectedFont === 'Kruti Dev 010' && useTransliteration ? handleKrutiInput : handleKeyDown}
+                style={getEditorStyle(selectedFont)}
+                autoFocus
+                placeholder={selectedFont === 'Kruti Dev 010' && useTransliteration ? "Type with Kruti keyboard (a=क, s=े, d=्, etc.)" : "Direct typing..."}
+              />
+            )}
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <button type="submit" style={buttonStyle}>
+                Submit (जमा करें)
+              </button>
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                Words: {typedText.trim().split(/\s+/).filter(w => w.length > 0).length}
+              </span>
+            </div>
           </form>
         </div>
       )}

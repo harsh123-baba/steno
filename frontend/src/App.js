@@ -13,12 +13,22 @@ import ResultsOverview from './pages/ResultsOverview';
 import AdminUpload from './pages/AdminUpload';
 
 const PrivateRoute = ({ children }) => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
   return user ? children : <Navigate to="/login" />;
 };
 
 const AdminRoute = ({ children }) => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
   return user && user.isAdmin ? children : <Navigate to="/" />;
 };
 
