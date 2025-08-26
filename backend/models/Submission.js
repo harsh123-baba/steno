@@ -9,6 +9,6 @@ const submissionSchema = new mongoose.Schema({
   accuracy: { type: Number, required: true },
   wpm: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now }
-});
+}, { suppressReservedKeysWarning: true });
 
 module.exports = mongoose.model('Submission', submissionSchema);

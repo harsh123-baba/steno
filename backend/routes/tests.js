@@ -50,26 +50,30 @@ const test = await Test.findById(req.params.id);
 router.post('/:id/submit', auth, async (req, res) => {
   try {
     const { typedText, timeTaken } = req.body;
+    
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+    
     if (typedText == null || timeTaken == null) {
       return res.status(400).json({ message: 'typedText and timeTaken are required.' });
     }
+    
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
-    const expected = test.expectedText;
-    const errors = levenshteinDistance(typedText.trim(), expected.trim());
+    const expected = test.expectedText || '';
+    const errors = expected ? levenshteinDistance(typedText.trim(), expected.trim()) : 0;
 
-    const wordsTyped = typedText.trim().split(/\s+/).length;
+    const wordsTyped = typedText.trim().split(/\s+/).filter(word => word.length > 0).length;
     const wpm = Math.round((wordsTyped / (timeTaken / 60)) || 0);
-
 
     const accuracy = expected.length
       ? Math.max(0, Math.round(((expected.length - errors) / expected.length) * 100))
-      : 0;
+      : 100;
 
-    // Save submission to DB
     const submission = new Submission({
-      user: req.user._id,
+      user: req.user.id,
       test: test._id,
       typedText,
       timeTaken,
@@ -81,7 +85,8 @@ router.post('/:id/submit', auth, async (req, res) => {
 
     res.json({ errors, accuracy, wpm });
   } catch (err) {
-      res.status(500).json({ message: 'Server error' });
+    console.error('Submit error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
