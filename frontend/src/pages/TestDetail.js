@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../api';
 import { ReactTransliterate } from "react-transliterate";
 import "react-transliterate/dist/index.css";
+import { Editor } from '@tinymce/tinymce-react';
 
 const containerStyle = {
   padding: '1rem',
@@ -273,18 +274,23 @@ const TestDetail = () => {
                 20px
               </button>
             </div>
-            <textarea
-              ref={editorRef}
+            <Editor
+              onInit={(evt, editor) => editorRef.current = editor}
               value={typedText}
-              onChange={(e) => setTypedText(e.target.value)}
-              onKeyDown={handleKrutiInput}  // Added Kruti keyboard input handling
-              style={getEditorStyle(selectedFont)}
-              className={selectedFont === 'Kruti Dev 010' ? 'kruti-font' : ''}
-              autoFocus
-              placeholder={selectedFont === 'Kruti Dev 010' ? "Enable Hindi keyboard in your system settings to type" : "Type here..."}
-              lang="hi"
-              inputMode="text"
-              spellCheck={false}
+              onEditorChange={(content) => setTypedText(content)}
+              init={{
+                height: 200,
+                menubar: false,
+                plugins: [
+                  'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                  'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                  'insertdatetime', 'media', 'table', 'help', 'wordcount', 'fontfamily', 'fontsizeselect'
+                ],
+                toolbar: 'undo redo | fontfamily fontsizeselect | bold italic underline | alignleft aligncenter alignright | bullist numlist outdent indent | removeformat | help',
+                font_family_formats: "Kruti Dev 010=Kruti Dev 010; DevLys=DevLys; Courier New=courier new,courier; Helvetica=helvetica; Symbol=symbol;",
+                content_css: './index.css',
+                content_style: "body { font-family: 'Kruti Dev 010'; font-size:14px }"
+              }}
             />
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <button type="submit" style={buttonStyle}>
