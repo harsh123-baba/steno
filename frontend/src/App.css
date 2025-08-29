@@ -1,3 +1,13 @@
+@font-face {
+  font-family: 'Kruti Dev 010';
+  src: url('/fonts/KrutiDev_010.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'DevLys 010';
+  src: url('/fonts/DevLys_010.ttf') format('truetype');
+}
+
 .App {
   text-align: center;
 }

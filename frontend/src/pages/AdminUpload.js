@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import { Editor } from '@tinymce/tinymce-react';
 
 const AdminUpload = () => {
   const [name, setName] = useState('');
@@ -87,13 +88,24 @@ const AdminUpload = () => {
         </div>
         <div style={{ marginTop: '0.5rem' }}>
           <label>Expected Text:</label><br />
-          <textarea
-            rows="4"
-            cols="50"
-            value={expectedText}
-            onChange={handleExpectedTextChange}
-            required
-            style={{ width: '100%' }}
+          <Editor
+            apiKey='z7lm6huqv4u9ckf73dvd9qv5y9z4blzv6qnbkde051abkal2'
+            init={{
+              plugins: [
+                // Core editing features
+                'anchor', 'autolink', 'searchreplace',  'wordcount'
+              ],
+              toolbar: 'undo redo | blocks fontfamily fontsize | removeformat',
+              tinycomments_mode: 'embedded',
+              tinycomments_author: 'Author name',
+              mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' },
+              ],
+              ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+              uploadcare_public_key: 'da1a58e5087cef6f5919',
+            }}
+            initialValue="Welcome to TinyMCE!"
           />
         </div>
         <div style={{ marginTop: '1rem' }}>

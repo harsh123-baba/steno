@@ -9,6 +9,14 @@
 }
 
 @font-face {
+  font-family: 'DevLys';
+  src: url('./fonts/DevLys_010.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Kokila';
   src: local('Kokila'), local('Kokila-Regular');
 }

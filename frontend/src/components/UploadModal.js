@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import { Editor } from '@tinymce/tinymce-react';
 
 const modalStyle = {
   position: 'fixed',
@@ -123,12 +124,26 @@ const UploadModal = ({ onClose }) => {
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Expected Text:</label><br />
-            <textarea
+            <Editor
+              tinymceScriptSrc='/tinymce/tinymce.min.js'
+              licenseKey='gpl'
               value={expectedText}
-              onChange={handleExpectedTextChange}
-              required
-              style={{ width: '100%' }}
-              rows={4}
+              onEditorChange={handleExpectedTextChange}
+              init={{
+                height: 500,
+                menubar: false,
+                plugins: "lists link image code",
+                toolbar: "undo redo | fontfamily fontsize",
+                font_family_formats: `
+                  Kruti Dev 010=Kruti Dev 010;
+                  DevLys 010=DevLys 010;
+                `,
+                content_style: `
+                  body { font-family: DevLys 010=DevLys 010;; }
+                  @font-face { font-family: 'Kruti Dev 010'; src: url('/fonts/KrutiDev_010.ttf') format('truetype'); }
+                  @font-face { font-family: 'DevLys 010'; src: url('/fonts/DevLys_010.ttf') format('truetype'); }
+                `
+              }}
             />
           </div>
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
