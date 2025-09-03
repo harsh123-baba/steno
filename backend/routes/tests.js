@@ -17,7 +17,7 @@ const tests = await Test.find().select('_id name category timeLimit');
 // GET results overview for all tests
 router.get('/results/all', auth, async (req, res) => {
   try {
-    const submissions = await Submission.find({ user: req.user._id })
+    const submissions = await Submission.find({ user: req.user.id })
       .sort({ createdAt: 1 })
       .populate('test', 'name category timeLimit')
       .select('test errors accuracy wpm createdAt');
@@ -141,7 +141,7 @@ router.get('/:id/results', auth, async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test not found' });
-    const submissions = await Submission.find({ user: req.user._id, test: req.params.id })
+    const submissions = await Submission.find({ user: req.user.id, test: req.params.id })
       .sort({ createdAt: 1 })
       .select('createdAt errors accuracy wpm typedText');
     res.json({ expectedText: test.expectedText, submissions });

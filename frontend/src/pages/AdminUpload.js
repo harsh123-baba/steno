@@ -14,7 +14,7 @@ const AdminUpload = () => {
   const handleCategoryChange = (e) => setCategory(e.target.value);
   const handleTimeLimitChange = (e) => setTimeLimit(e.target.value);
   const handleFileChange = (e) => setAudio(e.target.files[0]);
-  const handleExpectedTextChange = (e) => setExpectedText(e.target.value);
+  const handleExpectedTextChange = (content) => setExpectedText(content);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ const AdminUpload = () => {
       <h2>Upload New Test</h2>
       {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
-        <div>
+        <div style={{ marginBottom: '0.5rem' }}>
           <label>Test Name:</label><br />
           <input
             type="text"
@@ -59,7 +59,7 @@ const AdminUpload = () => {
             style={{ width: '100%' }}
           />
         </div>
-        <div style={{ marginTop: '0.5rem' }}>
+        <div style={{ marginBottom: '0.5rem' }}>
           <label>Category:</label><br />
           <select
             value={category}
@@ -72,8 +72,8 @@ const AdminUpload = () => {
             <option value="others">Others</option>
           </select>
         </div>
-        <div style={{ marginTop: '0.5rem' }}>
-          <label>Time to Complete (seconds):</label><br />
+        <div style={{ marginBottom: '0.5rem' }}>
+          <label>Time Limit (seconds):</label><br />
           <input
             type="number"
             value={timeLimit}
@@ -82,35 +82,44 @@ const AdminUpload = () => {
             style={{ width: '100%' }}
           />
         </div>
-        <div style={{ marginTop: '0.5rem' }}>
+        <div style={{ marginBottom: '0.5rem' }}>
           <label>Audio File:</label><br />
-          <input type="file" accept="audio/*" onChange={handleFileChange} required />
-        </div>
-        <div style={{ marginTop: '0.5rem' }}>
-          <label>Expected Text:</label><br />
-          <Editor
-            apiKey='z7lm6huqv4u9ckf73dvd9qv5y9z4blzv6qnbkde051abkal2'
-            init={{
-              plugins: [
-                // Core editing features
-                'anchor', 'autolink', 'searchreplace',  'wordcount'
-              ],
-              toolbar: 'undo redo | blocks fontfamily fontsize | removeformat',
-              tinycomments_mode: 'embedded',
-              tinycomments_author: 'Author name',
-              mergetags_list: [
-                { value: 'First.Name', title: 'First Name' },
-                { value: 'Email', title: 'Email' },
-              ],
-              ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-              uploadcare_public_key: 'da1a58e5087cef6f5919',
-            }}
-            initialValue="Welcome to TinyMCE!"
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={handleFileChange}
+            required
+            style={{ width: '100%' }}
           />
         </div>
-        <div style={{ marginTop: '1rem' }}>
-          <button type="submit">Upload</button>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <label>Expected Text:</label><br />
+          <Editor
+            tinymceScriptSrc="/tinymce/tinymce.min.js"
+            licenseKey="gpl"
+            value={expectedText}
+            onEditorChange={handleExpectedTextChange}
+            init={{
+              language: 'krutidev',
+              height: 200,
+              menubar: false,
+              plugins: 'lists link image code',
+              toolbar: 'undo redo | fontfamily fontsize',
+              font_family_formats: `
+                Kruti Dev 010=Kruti Dev 010;
+                DevLys 010=DevLys 010;
+              `,
+              content_style: `
+                @font-face { font-family: 'Kruti Dev 010'; src: url('/fonts/KrutiDev_010.ttf') format('truetype'); }
+                @font-face { font-family: 'DevLys 010'; src: url('/fonts/DevLys_010.ttf') format('truetype'); }
+                body { font-family: 'Kruti Dev 010', monospace; }
+              `
+            }}
+          />
         </div>
+        <button type="submit" style={{ padding: '0.5rem 1rem', background: '#2980b9', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Upload (जमा करें)
+        </button>
       </form>
     </div>
   );

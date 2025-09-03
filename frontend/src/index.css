@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'Kruti Dev 010';
-  src: url('./krutidev010.ttf') format('truetype');
+  src: url('./fonts/krutidev010.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -49,7 +49,8 @@ body {
 }
 
 /* Hindi input support */
-textarea, input[lang="hi"], [contenteditable] {
+textarea, input[lang="hi"], [contenteditable], textarea, input, select {
+  font-family: 'Kruti Dev 010', monospace !important;
   font-feature-settings: "liga" 1, "calt" 1;
 }
 

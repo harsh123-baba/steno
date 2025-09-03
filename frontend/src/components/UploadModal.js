@@ -46,8 +46,8 @@ const UploadModal = ({ onClose }) => {
     setAudio(e.target.files[0]);
   };
 
-  const handleExpectedTextChange = (e) => {
-    setExpectedText(e.target.value);
+  const handleExpectedTextChange = (content) => {
+    setExpectedText(content);
   };
 
   const handleSubmit = async (e) => {
@@ -125,23 +125,24 @@ const UploadModal = ({ onClose }) => {
           <div style={{ marginTop: '0.5rem' }}>
             <label>Expected Text:</label><br />
             <Editor
-              tinymceScriptSrc='/tinymce/tinymce.min.js'
-              licenseKey='gpl'
+              tinymceScriptSrc="/tinymce/tinymce.min.js"
+              licenseKey="gpl"
               value={expectedText}
               onEditorChange={handleExpectedTextChange}
               init={{
-                height: 500,
+                language: 'krutidev',
+                height: 200,
                 menubar: false,
-                plugins: "lists link image code",
-                toolbar: "undo redo | fontfamily fontsize",
+                plugins: 'lists link image code',
+                toolbar: 'undo redo | fontfamily fontsize',
                 font_family_formats: `
                   Kruti Dev 010=Kruti Dev 010;
                   DevLys 010=DevLys 010;
                 `,
                 content_style: `
-                  body { font-family: DevLys 010=DevLys 010;; }
                   @font-face { font-family: 'Kruti Dev 010'; src: url('/fonts/KrutiDev_010.ttf') format('truetype'); }
                   @font-face { font-family: 'DevLys 010'; src: url('/fonts/DevLys_010.ttf') format('truetype'); }
+                  body { font-family: 'Kruti Dev 010', monospace; }
                 `
               }}
             />
