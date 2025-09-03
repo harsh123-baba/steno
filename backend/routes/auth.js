@@ -6,7 +6,8 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { username, password, isAdmin } = req.body;
+const { username, password, isAdmin } = req.body;
+console.log(`[Auth] Register request: username=${username}, isAdmin=${isAdmin}`);
   try {
     let user = await User.findOne({ username });
     if (user) return res.status(400).json({ message: 'User already exists' });
@@ -20,14 +21,16 @@ router.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
     res.json({ token });
-  } catch (err) {
+} catch (err) {
+    console.error(`[Auth] Register error: ${err.message}`, err);
     res.status(500).json({ message: 'Server error' });
-  }
+}
 });
 
 // Login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+const { username, password } = req.body;
+console.log(`[Auth] Login request: username=${username}`);
   try {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
@@ -39,9 +42,10 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
     res.json({ token });
-  } catch (err) {
+} catch (err) {
+    console.error(`[Auth] Login error: ${err.message}`, err);
     res.status(500).json({ message: 'Server error' });
-  }
+}
 });
 
 module.exports = router;

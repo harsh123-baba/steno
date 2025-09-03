@@ -6,6 +6,7 @@ const router = express.Router();
 
 // GET all tests (list audio files)
 router.get('/', auth, async (req, res) => {
+  console.log(`[Tests] GET all tests requested by user=${req.user.id}`);
   try {
 const tests = await Test.find().select('_id name category timeLimit');
     res.json(tests);
