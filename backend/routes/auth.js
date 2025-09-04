@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
+  console.log("hello", req.body)
 const { username, password, isAdmin } = req.body;
 console.log(`[Auth] Register request: username=${username}, isAdmin=${isAdmin}`);
   try {
@@ -29,6 +30,7 @@ console.log(`[Auth] Register request: username=${username}, isAdmin=${isAdmin}`)
 
 // Login
 router.post('/login', async (req, res) => {
+  console.log("bro")
 const { username, password } = req.body;
 console.log(`[Auth] Login request: username=${username}`);
   try {

@@ -14,11 +14,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log("eklfjs")
       const { data } = await api.post('/auth/register', {
         username,
         password,
         isAdmin
       });
+      console.log("data", data)
       login(data.token);
       navigate('/tests');
     } catch (err) {

@@ -124,6 +124,7 @@ const UploadModal = ({ onClose }) => {
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Expected Text:</label><br />
+            <>
             <Editor
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
@@ -146,6 +147,7 @@ const UploadModal = ({ onClose }) => {
                 `
               }}
             />
+            </>
           </div>
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
             <button type="button" onClick={onClose} style={{ marginRight: '0.5rem' }}>
