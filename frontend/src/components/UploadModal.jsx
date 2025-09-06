@@ -124,14 +124,12 @@ const UploadModal = ({ onClose }) => {
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Expected Text:</label><br />
-            <>
             <Editor
               tinymceScriptSrc="/tinymce/tinymce.min.js"
               licenseKey="gpl"
               value={expectedText}
               onEditorChange={handleExpectedTextChange}
               init={{
-                language: 'krutidev',
                 height: 200,
                 menubar: false,
                 plugins: 'lists link image code',
@@ -147,7 +145,6 @@ const UploadModal = ({ onClose }) => {
                 `
               }}
             />
-            </>
           </div>
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
             <button type="button" onClick={onClose} style={{ marginRight: '0.5rem' }}>
