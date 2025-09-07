@@ -97,6 +97,13 @@ const TestDetail = () => {
 
   const handleEnded = () => setTimerActive(true);
 
+  const handleSkip = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setTimerActive(true);
+    }
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     try {
@@ -117,8 +124,9 @@ const TestDetail = () => {
         <div style={containerStyle}>
           <div style={cardStyle}>
             <h2>{name}</h2>
-            <audio ref={audioRef} controls src={audioUrl} style={audioStyle} onEnded={handleEnded} />
-            <p><strong>Category:</strong> {category}</p>
+                <audio ref={audioRef} src={audioUrl} style={audioStyle} onEnded={handleEnded} />
+                <button style={buttonStyle} onClick={handleSkip}>Skip and Start Typing</button>
+                <p><strong>Category:</strong> {category}</p>
             <p><strong>Time Limit:</strong> {timeLimit}s</p>
           </div>
         </div>
@@ -134,7 +142,6 @@ const TestDetail = () => {
               value={typedText}
               onEditorChange={(content) => setTypedText(content)}
               init={{
-                language: 'krutidev',
                 height: 500,
                 menubar: false,
                 plugins: 'lists link image code',

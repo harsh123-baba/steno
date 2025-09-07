@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../api';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
+import DiffViewer from '../components/DiffViewer';
 
 const containerStyle = {
   padding: '1rem',
@@ -118,17 +119,7 @@ const TestResults = () => {
       {compareIdx !== null && (
         <div style={compareContainer}>
           <h3>Original vs Typed Comparison</h3>
-          <p>
-            {expectedText.split('').map((ch, i) => {
-              const typedChar = submissions[compareIdx].typedText[i] || '_';
-              const color = typedChar === ch ? '#000' : 'red';
-              return (
-                <span key={i} style={{ color }}>
-                  {typedChar}
-                </span>
-              );
-            })}
-          </p>
+          <DiffViewer original={expectedText} typed={submissions[compareIdx].typedText} />
           <button onClick={closeCompare} style={{ marginTop: '1rem' }}>
             Close Comparison
           </button>

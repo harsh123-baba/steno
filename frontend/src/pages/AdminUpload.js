@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from '../api';
 import { Editor } from '@tinymce/tinymce-react';
+import DiffViewer from '../components/DiffViewer';
 
 const AdminUpload = () => {
   const [name, setName] = useState('');
@@ -9,6 +10,8 @@ const AdminUpload = () => {
   const [audio, setAudio] = useState(null);
   const [expectedText, setExpectedText] = useState('');
   const [message, setMessage] = useState('');
+  const [typedText, setTypedText] = useState('');
+  const handleTypedTextChange = (e) => setTypedText(e.target.value);
 
   const handleNameChange = (e) => setName(e.target.value);
   const handleCategoryChange = (e) => setCategory(e.target.value);
@@ -100,7 +103,6 @@ const AdminUpload = () => {
             value={expectedText}
             onEditorChange={handleExpectedTextChange}
             init={{
-              language: 'krutidev',
               height: 200,
               menubar: false,
               plugins: 'lists link image code',
@@ -116,6 +118,18 @@ const AdminUpload = () => {
               `
             }}
           />
+        </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <label>Typed Text:</label><br />
+          <textarea
+            value={typedText}
+            onChange={handleTypedTextChange}
+            style={{ width: '100%', height: '100px' }}
+          />
+        </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <label>Comparison Preview:</label>
+          <DiffViewer original={expectedText} typed={typedText} />
         </div>
         <button type="submit" style={{ padding: '0.5rem 1rem', background: '#2980b9', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Upload (जमा करें)

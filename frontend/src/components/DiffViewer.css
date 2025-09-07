@@ -1,0 +1,15 @@
+.diff-container {
+  font-family: monospace;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.diff-wrong {
+  color: red;
+  font-weight: bold;
+}
+
+.diff-correct {
+  color: #555;
+  margin-right: 2px;
+}
