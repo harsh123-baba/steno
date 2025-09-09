@@ -41,7 +41,7 @@ const ResultsOverview = () => {
       ? Math.round(submissions.reduce((sum, s) => sum + s.wpm, 0) / submissions.length)
       : 0;
     return {
-      id: test._id,
+      id: test.id,
       name: test.name,
       category: test.category,
       attempts: submissions.length,

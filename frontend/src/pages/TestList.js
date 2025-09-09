@@ -69,10 +69,10 @@ const TestList = () => {
       </div>
       <div style={gridStyle}>
         {tests.map((test) => (
-          <div key={test._id} style={cardStyle}>
+          <div key={test.id} style={cardStyle}>
             <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 0.5rem 0' }}>
-                <Link to={`/tests/${test._id}`} style={{ textDecoration: 'none', color: '#2c3e50', fontSize: '1.2rem' }}>
+                <Link to={`/tests/${test.id}`} style={{ textDecoration: 'none', color: '#2c3e50', fontSize: '1.2rem' }}>
                   {test.name}
                 </Link>
               </h3>

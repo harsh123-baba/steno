@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const sequelize = require('./db');
 const morgan = require('morgan');
 
 const authRoutes = require('./routes/auth');
@@ -18,7 +18,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/tests', testRoutes);
 
 const PORT = process.env.PORT || 5000;
-console.log(process.env.MONGODB_URI)
-mongoose.connect(process.env.MONGODB_URI)
+console.log('Connecting to MySQL...');
+sequelize
+  .sync()
   .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
   .catch((err) => console.error(err));

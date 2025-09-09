@@ -1,14 +1,36 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
+const User = require('./User');
+const Test = require('./Test');
 
-const submissionSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  test: { type: mongoose.Schema.Types.ObjectId, ref: 'Test', required: true },
-  typedText: { type: String, required: true },
-  timeTaken: { type: Number, required: true }, // seconds
-  errors: { type: Number, required: true },
-  accuracy: { type: Number, required: true },
-  wpm: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now }
-}, { suppressReservedKeysWarning: true });
+const Submission = sequelize.define('Submission', {
+  typedText: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  timeTaken: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  errors: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  accuracy: {
+    type: DataTypes.FLOAT,
+    allowNull: false
+  },
+  wpm: {
+    type: DataTypes.FLOAT,
+    allowNull: false
+  }
+}, {
+  tableName: 'submissions',
+  timestamps: true
+});
 
-module.exports = mongoose.model('Submission', submissionSchema);
+// Define associations
+Submission.belongsTo(User, { foreignKey: 'userId' });
+Submission.belongsTo(Test, { foreignKey: 'testId' });
+
+module.exports = Submission;

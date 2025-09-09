@@ -5,6 +5,8 @@ import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import DiffViewer from '../components/DiffViewer';
 
+
+
 const containerStyle = {
   padding: '1rem',
   display: 'flex',
@@ -119,7 +121,13 @@ const TestResults = () => {
       {compareIdx !== null && (
         <div style={compareContainer}>
           <h3>Original vs Typed Comparison</h3>
-          <DiffViewer original={expectedText} typed={submissions[compareIdx].typedText} />
+          <div className="kruti-text">
+            <DiffViewer
+              original={expectedText}
+              typed={submissions[compareIdx].typedText}
+            />
+          </div>
+
           <button onClick={closeCompare} style={{ marginTop: '1rem' }}>
             Close Comparison
           </button>

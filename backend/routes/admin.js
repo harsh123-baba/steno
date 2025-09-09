@@ -6,7 +6,15 @@ const { auth, admin } = require('../middleware/auth');
 const router = express.Router();
 
 // Multer setup for file uploads
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, process.env.AUDIO_STORAGE_PATH);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
 const upload = multer({ storage });
 
 // Admin can upload a new test (name, audio file, and transcription txt)
@@ -30,18 +38,15 @@ router.post(
       }
 
 
-      const test = new Test({
+      const test = await Test.create({
         name,
         category,
         timeLimit: Number(timeLimit),
-        audio: {
-          data: audioFile.buffer,
-          contentType: audioFile.mimetype
-        },
+        audioPath: req.file.path,
+        contentType: audioFile.mimetype,
         expectedText
       });
 
-      await test.save();
       res.json(test);
     } catch (err) {
       console.error(`[Admin] Upload test error: ${err.message}`, err);

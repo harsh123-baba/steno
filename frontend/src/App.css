@@ -8,6 +8,11 @@
   src: url('/fonts/DevLys_010.ttf') format('truetype');
 }
 
+.kruti-text {
+  font-family: 'Kruti Dev 010';
+  font-size: 12px; /* Adjust size as needed */
+}
+
 .App {
   text-align: center;
 }

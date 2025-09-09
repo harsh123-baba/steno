@@ -48,10 +48,19 @@ const buttonStyle = {
   marginTop: '1rem'
 };
 
+const submitTopStyle = {
+  ...buttonStyle,
+  position: 'absolute',
+  top: '1rem',
+  right: '1rem',
+  marginTop: 0
+};
+
 const TestDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const audioRef = useRef(null);
+
   const [audioUrl, setAudioUrl] = useState('');
   const [typedText, setTypedText] = useState('');
   const [elapsed, setElapsed] = useState(0);
@@ -59,6 +68,7 @@ const TestDetail = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   // Fetch test on mount
   useEffect(() => {
@@ -71,6 +81,8 @@ const TestDetail = () => {
         setTimeLimit(data.timeLimit);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchTest();
@@ -79,23 +91,31 @@ const TestDetail = () => {
   // Auto-play audio
   useEffect(() => {
     if (audioUrl && audioRef.current) {
+      audioRef.current.load();
       audioRef.current.play().catch(console.error);
     }
   }, [audioUrl]);
 
   // Timer logic
   useEffect(() => {
-    let timer;
-    if (timerActive && elapsed < timeLimit) {
-      timer = setInterval(() => setElapsed(prev => prev + 1), 1000);
-    }
-    if (elapsed >= timeLimit && timerActive) {
-      handleSubmit();
-    }
+    if (!timerActive) return;
+    if (timeLimit <= 0) return;
+    const timer = setInterval(() => {
+      setElapsed(prev => {
+        if (prev + 1 >= timeLimit) {
+          clearInterval(timer);
+          handleSubmit();
+          return timeLimit;
+        }
+        return prev + 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
-  }, [timerActive, elapsed, timeLimit]);
+  }, [timerActive, timeLimit]);
 
-  const handleEnded = () => setTimerActive(true);
+  const handleEnded = () => {
+    setTimerActive(true);
+  };
 
   const handleSkip = () => {
     if (audioRef.current) {
@@ -105,18 +125,26 @@ const TestDetail = () => {
   };
 
   const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     try {
       await api.post(`/tests/${id}/submit`, {
         typedText: typedText.trim(),
         timeTaken: elapsed
       });
-      navigate('/results');
+      navigate(`/tests/${id}/results`);
     } catch (err) {
       console.error(err);
       alert('Submission failed');
     }
   };
+
+  if (loading) {
+    return (
+      <div style={containerStyle}>
+        <p>Loading test...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -124,15 +152,26 @@ const TestDetail = () => {
         <div style={containerStyle}>
           <div style={cardStyle}>
             <h2>{name}</h2>
-                <audio ref={audioRef} src={audioUrl} style={audioStyle} onEnded={handleEnded} />
-                <button style={buttonStyle} onClick={handleSkip}>Skip and Start Typing</button>
-                <p><strong>Category:</strong> {category}</p>
+            <audio
+              ref={audioRef}
+              src={audioUrl}
+              style={audioStyle}
+              autoPlay
+              onEnded={handleEnded}
+            />
+            <button style={buttonStyle} onClick={handleSkip}>
+              Skip and Start Typing
+            </button>
+            <p><strong>Category:</strong> {category}</p>
             <p><strong>Time Limit:</strong> {timeLimit}s</p>
           </div>
         </div>
       )}
       {timerActive && (
         <div style={overlayStyle}>
+          <button onClick={handleSubmit} style={submitTopStyle}>
+            Submit
+          </button>
           <h2>{name}</h2>
           <p><strong>Timer:</strong> {elapsed}s / {timeLimit}s</p>
           <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '800px' }}>
@@ -157,8 +196,12 @@ const TestDetail = () => {
                 `
               }}
             />
-            <button type='submit' style={buttonStyle}>Submit (जमा करें)</button>
-            <span style={{ marginLeft: '1rem' }}>Words: {typedText.trim().split(/\s+/).filter(w => w).length}</span>
+            <button type='submit' style={buttonStyle}>
+              Submit (जमा करें)
+            </button>
+            <span style={{ marginLeft: '1rem' }}>
+              Words: {typedText.trim().split(/\s+/).filter(w => w).length}
+            </span>
           </form>
         </div>
       )}

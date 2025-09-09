@@ -1,15 +1,33 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
 
-const testSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  category: { type: String, enum: ['ssc', 'court', 'others'], required: true },
-  timeLimit: { type: Number, required: true }, // seconds
-  audio: {
-    data: Buffer,
-    contentType: String
+const Test = sequelize.define('Test', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
   },
-  expectedText: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
+  category: {
+    type: DataTypes.ENUM('ssc', 'court', 'others'),
+    allowNull: false
+  },
+  timeLimit: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  audioPath: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  contentType: {
+    type: DataTypes.STRING
+  },
+  expectedText: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {
+  tableName: 'tests',
+  timestamps: true
 });
 
-module.exports = mongoose.model('Test', testSchema);
+module.exports = Test;
