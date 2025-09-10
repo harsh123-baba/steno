@@ -133,7 +133,7 @@ const TestList = () => {
                       cursor: 'pointer'
                     }}
                   >
-                    Edit / Upload
+                    Edit 
                   </button>
                 </>
               )}

@@ -168,11 +168,12 @@ const TestDetail = () => {
         </div>
       ) : (
         <div style={overlayStyle}>
-          <button onClick={handleSubmit} style={submitTopStyle}>
-            Submit
-          </button>
           <h2>{name}</h2>
-          <p><strong>Timer:</strong> {elapsed}s / {timeLimit}s</p>
+          
+          <strong>Timer:</strong> {elapsed}s / {timeLimit}s
+          <button type="submit" style={buttonStyle}>
+              Submit (जमा करें)
+            </button>
           <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '800px' }}>
             <Editor
               tinymceScriptSrc='/tinymce/tinymce.min.js'
@@ -195,9 +196,7 @@ const TestDetail = () => {
                 `
               }}
             />
-            <button type="submit" style={buttonStyle}>
-              Submit (जमा करें)
-            </button>
+            
             <span style={{ marginLeft: '1rem' }}>
               Words: {typedText.trim().split(/\s+/).filter(w => w).length}
             </span>
