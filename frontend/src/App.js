@@ -11,6 +11,7 @@ import TestDetail from './pages/TestDetail';
 import TestResults from './pages/TestResults';
 import ResultsOverview from './pages/ResultsOverview';
 import AdminUpload from './pages/AdminUpload';
+import AdminAssign from './pages/AdminAssign';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -78,6 +79,14 @@ function App() {
             element={
               <AdminRoute>
                 <AdminUpload />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/assign"
+            element={
+              <AdminRoute>
+                <AdminAssign />
               </AdminRoute>
             }
           />

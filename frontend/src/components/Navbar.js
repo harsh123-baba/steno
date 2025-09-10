@@ -25,9 +25,12 @@ const Navbar = () => {
           <>
             <Link to="/tests" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Tests</Link>
             <Link to="/results" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Results</Link>
-            {user.isAdmin && (
-              <Link to="/admin/upload" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Upload</Link>
-            )}
+        {user.isAdmin && (
+          <>
+            <Link to="/admin/upload" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Upload</Link>
+            <Link to="/admin/assign" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Assign</Link>
+          </>
+        )}
           </>
         )}
       </div>

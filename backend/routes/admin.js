@@ -2,6 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const Test = require('../models/Test');
 const { auth, admin } = require('../middleware/auth');
+const User = require('../models/User');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 
@@ -55,4 +58,50 @@ router.post(
   }
 );
 
+router.post('/promote', auth, admin, async (req, res) => {
+  const { username } = req.body;
+  try {
+    const user = await User.findOne({ where: { username } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    console.log(user)
+    user.isAdmin = true;
+    await user.save();
+    res.json({ message: `${username} has been promoted to admin.` });
+  } catch (err) {
+    console.error('[Admin] Promote user error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+router.delete('/tests/:id', auth, admin,
+  async (req, res) => {
+    try {
+      const test = await Test.findByPk(req.params.id);
+      console.log(`[Admin] Delete test request: user=${req.user.id}, testId=${test}`);
+
+      if (!test) {
+        return res.status(404).json({ message: 'Test not found.' });
+      }
+
+      const filename = path.basename(test.audioPath, path.extname(test.audioPath)); // strip extension
+      const mp3Path = path.join(process.env.AUDIO_STORAGE_PATH, filename + '.mp3');
+      const oggPath = path.join(process.env.AUDIO_STORAGE_PATH, filename + '.ogg');
+
+      await test.destroy();
+
+      if (fs.existsSync(mp3Path)) {
+        fs.unlinkSync(mp3Path);
+      }
+
+      if (fs.existsSync(oggPath)) {
+        fs.unlinkSync(oggPath);
+      }
+      res.json({ message: 'Test deleted successfully.' });
+    } catch (err) {
+      console.error('[Admin] Delete test error:', err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 module.exports = router;

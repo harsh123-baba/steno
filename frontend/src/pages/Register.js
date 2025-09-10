@@ -46,7 +46,7 @@ const Register = () => {
   const styles = {
     container: {
       backgroundColor: '#fff',
-      maxWidth: '400px',
+      minWidth: '800px',
       margin: '2rem',
       padding: '2rem',
       borderRadius: '8px',
@@ -135,16 +135,6 @@ const Register = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-        </div>
-        <div style={styles.formGroup}>
-          <label>
-            <input
-              type="checkbox"
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-            />{' '}
-            Register as Admin
-          </label>
         </div>
         <button type="submit" style={styles.button}>
           Register

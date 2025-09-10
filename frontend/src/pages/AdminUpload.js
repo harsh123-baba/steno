@@ -119,18 +119,6 @@ const AdminUpload = () => {
             }}
           />
         </div>
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label>Typed Text:</label><br />
-          <textarea
-            value={typedText}
-            onChange={handleTypedTextChange}
-            style={{ width: '100%', height: '100px' }}
-          />
-        </div>
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label>Comparison Preview:</label>
-          <DiffViewer original={expectedText} typed={typedText} />
-        </div>
         <button type="submit" style={{ padding: '0.5rem 1rem', background: '#2980b9', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Upload (जमा करें)
         </button>
