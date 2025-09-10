@@ -20,6 +20,8 @@ app.use('/api/tests', testRoutes);
 const PORT = process.env.PORT || 5000;
 console.log('Connecting to MySQL...');
 sequelize
-  .sync()
+  .authenticate()
+  .then(() => sequelize.query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"))
+  .then(() => sequelize.sync())
   .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
   .catch((err) => console.error(err));

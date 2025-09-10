@@ -26,6 +26,19 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script src="https://www.google.com/jsapi"></script>
+    <script>
+      google.load("elements", "1", { packages: "transliteration" });
+      google.setOnLoadCallback(function() {
+        var options = {
+          sourceLanguage: google.elements.transliteration.LanguageCode.ENGLISH,
+          destinationLanguage: [google.elements.transliteration.LanguageCode.HINDI],
+          transliterationEnabled: true
+        };
+        var control = new google.elements.transliteration.TransliterationControl(options);
+        control.makeTransliteratable(["transliterateArea"]);
+      });
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

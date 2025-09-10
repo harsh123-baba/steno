@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './DiffViewer.css';
+import kru2uni from '@anthro-ai/krutidev-unicode';
 
 const stripTags = (input) => {
   const tmp = document.createElement('div');
@@ -59,8 +60,8 @@ function diffWords(originalText, typedText) {
 }
 
 const DiffViewer = ({ original, typed }) => {
-  const originalText = stripTags(original);
-  const typedText = stripTags(typed);
+  const originalText = kru2uni(stripTags(original));
+  const typedText = kru2uni(stripTags(typed));
   const segments = diffWords(originalText, typedText);
 
   return (

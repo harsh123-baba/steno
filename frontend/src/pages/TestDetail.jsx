@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
+import typeHindi from 'type-hindi';
 import { Editor } from '@tinymce/tinymce-react';
-
 const containerStyle = {
   padding: '1rem',
   display: 'flex',
@@ -61,6 +61,7 @@ const TestDetail = () => {
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
+  // State declarations
   const [audioUrl, setAudioUrl] = useState('');
   const [typedText, setTypedText] = useState('');
   const [elapsed, setElapsed] = useState(0);
@@ -70,7 +71,7 @@ const TestDetail = () => {
   const [timeLimit, setTimeLimit] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Fetch test on mount
+  // Fetch test metadata and audio
   useEffect(() => {
     const fetchTest = async () => {
       try {
@@ -88,7 +89,7 @@ const TestDetail = () => {
     fetchTest();
   }, [id]);
 
-  // Auto-play audio
+  // Auto-play audio when loaded
   useEffect(() => {
     if (audioUrl && audioRef.current) {
       audioRef.current.load();
@@ -96,10 +97,9 @@ const TestDetail = () => {
     }
   }, [audioUrl]);
 
-  // Timer logic
+  // Timer for typing phase
   useEffect(() => {
-    if (!timerActive) return;
-    if (timeLimit <= 0) return;
+    if (!timerActive || timeLimit <= 0) return;
     const timer = setInterval(() => {
       setElapsed(prev => {
         if (prev + 1 >= timeLimit) {
@@ -148,7 +148,7 @@ const TestDetail = () => {
 
   return (
     <>
-      {!timerActive && (
+      {!timerActive ? (
         <div style={containerStyle}>
           <div style={cardStyle}>
             <h2>{name}</h2>
@@ -166,8 +166,7 @@ const TestDetail = () => {
             <p><strong>Time Limit:</strong> {timeLimit}s</p>
           </div>
         </div>
-      )}
-      {timerActive && (
+      ) : (
         <div style={overlayStyle}>
           <button onClick={handleSubmit} style={submitTopStyle}>
             Submit
@@ -196,7 +195,7 @@ const TestDetail = () => {
                 `
               }}
             />
-            <button type='submit' style={buttonStyle}>
+            <button type="submit" style={buttonStyle}>
               Submit (जमा करें)
             </button>
             <span style={{ marginLeft: '1rem' }}>
