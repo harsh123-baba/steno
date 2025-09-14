@@ -1,8 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const Test = require('../models/Test');
-const Submission = require('../models/Submission');
+const { Test, Submission } = require('../db').models;
 const { auth } = require('../middleware/auth');
 const router = express.Router();
 
@@ -35,8 +34,8 @@ router.get('/', auth, async (req, res) => {
     });
     res.json(tests);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error in GET /tests:', err.stack);
+    res.status(500).json({ message: 'Server error', error: err.stack });
   }
 });
 

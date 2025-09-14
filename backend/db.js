@@ -25,8 +25,18 @@ sequelize
   .then(() => console.log('MySQL connection established successfully.'))
   .catch(err => console.error('Unable to connect to MySQL:', err));
 
-
+// Export sequelize instance before loading models to resolve circular dependency
 module.exports = sequelize;
-require('./models/User');
-require('./models/Test');
-require('./models/Submission');
+
+// Load model definitions
+require('./models/User')(sequelize);
+require('./models/Test')(sequelize);
+require('./models/Submission')(sequelize);
+
+// Define associations after models loaded
+const { User, Test, Submission } = sequelize.models;
+
+User.hasMany(Submission, { foreignKey: 'userId' });
+Test.hasMany(Submission, { foreignKey: 'testId' });
+Submission.belongsTo(User, { foreignKey: 'userId' });
+Submission.belongsTo(Test, { foreignKey: 'testId' });

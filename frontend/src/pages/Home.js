@@ -1,77 +1,33 @@
 import React, { useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import AuthContext from '../contexts/AuthContext';
 
-const Home = () => {
-  const { user, logout, loading } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  if (loading) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
-    );
-  }
-
-  const pageStyles = {
-    minHeight: '100vh',
-    background: 'linear-gradient(to right, #6a11cb, #2575fc)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  };
-  const styles = {
-    container: {
-      backgroundColor: '#fff',
-      padding: '2rem',
-      borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      textAlign: 'center',
-      maxWidth: '500px'
-    },
-    button: {
-      marginTop: '1rem',
-      padding: '0.75rem 1.5rem',
-      backgroundColor: '#6a11cb',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer'
-    },
-    link: {
-      color: '#6a11cb',
-      textDecoration: 'none',
-      fontWeight: 'bold'
-    }
-  };
+function Home() {
+  const { user } = useContext(AuthContext);
+  let expiryDate = user?.subscriptionExpiry ? new Date(user.subscriptionExpiry) : null;
+  let daysLeft = expiryDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
-    <div style={pageStyles}>
-      <div style={styles.container}>
-        {user ? (
-          <>
-            <h1>Welcome, {user.username}!</h1>
-            <p>Email: {user.email}</p>
-            <p>Phone: {user.phone}</p>
-          </>
-        ) : (
-          <>
-            <h1>Welcome to Hindi Typing Test</h1>
-            <p>
-              Please{' '}
-              <Link to="/login" style={styles.link}>
-                login
-              </Link>{' '}
-              or{' '}
-              <Link to="/register" style={styles.link}>
-                register
-              </Link>{' '}
-              to take tests.
-            </p>
-          </>
-        )}
-      </div>
+    <div style={{ padding: '1rem' }}>
+      <h2>Welcome to Steno</h2>
+      {user ? (
+        <div>
+          <p>Subscription Type: {user.subscriptionType}</p>
+          <p>
+            Subscription Start: {user.subscriptionStart ? new Date(user.subscriptionStart).toLocaleDateString() : '—'}
+          </p>
+          <p style={{ color: daysLeft !== null && daysLeft <= 7 ? 'red' : 'inherit' }}>
+            Subscription Expiry: {expiryDate ? expiryDate.toLocaleDateString() : '—'}
+            {expiryDate && daysLeft !== null ? ` (${daysLeft} days left)` : ''}
+          </p>
+          {user.subscriptionType === 'simple' && (
+            <p>You are a Simple User. Upgrade to Premium for more features.</p>
+          )}
+        </div>
+      ) : (
+        <p>Select a test to begin.</p>
+      )}
     </div>
   );
-};
+}
 
 export default Home;

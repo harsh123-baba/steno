@@ -17,7 +17,7 @@ const Navbar = () => {
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '1rem 2rem',
-      backgroundColor: '#2c3e50'
+      backgroundColor: '#2c3e50',
     }}>
       <div>
         <Link to="/" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none', fontWeight: 'bold' }}>Home</Link>
@@ -25,12 +25,13 @@ const Navbar = () => {
           <>
             <Link to="/tests" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Tests</Link>
             <Link to="/results" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Results</Link>
-        {user.isAdmin && (
-          <>
-            <Link to="/admin/upload" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Upload</Link>
-            <Link to="/admin/assign" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Assign</Link>
-          </>
-        )}
+            {user.isAdmin && (
+              <>
+                <Link to="/admin/upload" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Upload</Link>
+                <Link to="/admin/assign" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Assign</Link>
+                <Link to="/admin/users" style={{ color: '#ecf0f1', marginRight: '1rem', textDecoration: 'none' }}>Users</Link>
+              </>
+            )}
           </>
         )}
       </div>
@@ -44,7 +45,7 @@ const Navbar = () => {
               border: 'none',
               padding: '0.5rem 1rem',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           >
             Logout
