@@ -62,17 +62,58 @@ function diffWords(originalText, typedText) {
 const DiffViewer = ({ original, typed }) => {
   const originalText = kru2uni(stripTags(original));
   const typedText = kru2uni(stripTags(typed));
-  const segments = diffWords(originalText, typedText);
+  const segmentsRaw = diffWords(originalText, typedText);
+
+  const segments = [];
+  for (let i = 0; i < segmentsRaw.length; ) {
+    if (
+      segmentsRaw[i].type === 'typed' &&
+      segmentsRaw[i + 1] &&
+      segmentsRaw[i + 1].type === 'orig'
+    ) {
+      segments.push({
+        type: 'error',
+        wrong: segmentsRaw[i].value,
+        correct: segmentsRaw[i + 1].value
+      });
+      i += 2;
+    } else if (segmentsRaw[i].type === 'match') {
+      segments.push({ type: 'match', value: segmentsRaw[i].value });
+      i++;
+    } else if (segmentsRaw[i].type === 'typed') {
+      segments.push({ type: 'deletion', wrong: segmentsRaw[i].value });
+      i++;
+    } else if (segmentsRaw[i].type === 'orig') {
+      segments.push({ type: 'insertion', correct: segmentsRaw[i].value });
+      i++;
+    } else {
+      i++;
+    }
+  }
 
   return (
     <div className="diff-container">
       {segments.map((seg, idx) => {
         if (seg.type === 'match') {
           return <span key={idx}>{seg.value} </span>;
-        } else if (seg.type === 'typed') {
-          return <span key={idx} className="diff-wrong">{seg.value} </span>;
-        } else if (seg.type === 'orig') {
-          return <span key={idx} className="diff-correct">[{seg.value}] </span>;
+        } else if (seg.type === 'error') {
+          return (
+            <span key={idx} className="diff-error">
+              <del>{seg.wrong}</del> [{seg.correct}]{' '}
+            </span>
+          );
+        } else if (seg.type === 'deletion') {
+          return (
+            <span key={idx} className="diff-error">
+              <del>{seg.wrong}</del>{' '}
+            </span>
+          );
+        } else if (seg.type === 'insertion') {
+          return (
+            <span key={idx} className="diff-missing">
+              [{seg.correct}]{' '}
+            </span>
+          );
         }
         return null;
       })}
@@ -82,7 +123,7 @@ const DiffViewer = ({ original, typed }) => {
 
 DiffViewer.propTypes = {
   original: PropTypes.string.isRequired,
-  typed: PropTypes.string.isRequired,
+  typed: PropTypes.string.isRequired
 };
 
 export default DiffViewer;

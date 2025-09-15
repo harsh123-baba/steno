@@ -14,3 +14,17 @@
   color: #555;
   margin-right: 2px;
 }
+
+.diff-missing {
+  color: orange;
+  font-style: italic;
+  margin-right: 2px;
+}
+
+.diff-error {
+  color: red;
+}
+
+.diff-error del {
+  text-decoration: line-through;
+}
