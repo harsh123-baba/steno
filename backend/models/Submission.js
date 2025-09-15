@@ -21,6 +21,21 @@ module.exports = (sequelize) => {
     wpm: {
       type: DataTypes.FLOAT,
       allowNull: false
+    },
+    totalWords: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    correctWords: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    wrongWords: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     }
   }, {
     tableName: 'submissions',

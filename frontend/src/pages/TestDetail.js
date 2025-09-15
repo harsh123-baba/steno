@@ -69,6 +69,8 @@ const TestDetail = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
+  const [dictationWords, setDictationWords] = useState('');
+  const [wordCount, setWordCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Fetch test metadata and audio

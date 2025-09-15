@@ -30,7 +30,6 @@ const UploadModal = ({ onClose }) => {
   const [expectedText, setExpectedText] = useState('');
   const [message, setMessage] = useState('');
   const [dictationWpm, setDictationWpm] = useState('');
-
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
@@ -50,11 +49,12 @@ const UploadModal = ({ onClose }) => {
   const handleExpectedTextChange = (content) => {
     setExpectedText(content);
   };
+  
   const handleDictationWpmChange = (e) => {
     setDictationWpm(e.target.value);
   };
   const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
-
+  console.log(dictationWpm)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !category || !timeLimit || !dictationWpm || !audio || !expectedText) {
@@ -76,6 +76,7 @@ const UploadModal = ({ onClose }) => {
       setName('');
       setCategory('ssc');
       setTimeLimit('');
+      setDictationWpm('');
       setAudio(null);
       setExpectedText('');
       setTimeout(onClose, 1000);

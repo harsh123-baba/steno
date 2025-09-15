@@ -82,6 +82,38 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// Function to calculate word-based differences
+function calculateWordDifferences(expectedText, typedText) {
+  const expectedWords = expectedText.trim().split(/\s+/).filter(w => w);
+  const typedWords = typedText.trim().split(/\s+/).filter(w => w);
+  
+  const totalWords = expectedWords.length;
+  let correctWords = 0;
+  let wrongWords = 0;
+  
+  // Compare words at each position
+  const minLength = Math.min(expectedWords.length, typedWords.length);
+  for (let i = 0; i < minLength; i++) {
+    if (expectedWords[i] === typedWords[i]) {
+      correctWords++;
+    } else {
+      wrongWords++;
+    }
+  }
+  
+  // Handle extra words in typed text
+  if (typedWords.length > expectedWords.length) {
+    wrongWords += typedWords.length - expectedWords.length;
+  }
+  
+  // Handle missing words
+  if (expectedWords.length > typedWords.length) {
+    wrongWords += expectedWords.length - typedWords.length;
+  }
+  
+  return { totalWords, correctWords, wrongWords };
+}
+
 // Submit typing result
 router.post('/:id/submit', auth, async (req, res) => {
   try {
@@ -93,10 +125,15 @@ router.post('/:id/submit', auth, async (req, res) => {
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
     const expected = test.expectedText || '';
-    const errors = expected ? levenshteinDistance(typedText.trim(), expected.trim()) : 0;
+    
+    // Calculate word-based metrics
+    const { totalWords, correctWords, wrongWords } = calculateWordDifferences(expected, typedText);
     const wordsTyped = typedText.trim().split(/\s+/).filter(w => w).length;
     const wpm = Math.round((wordsTyped / (timeTaken / 60)) || 0);
-    const accuracy = expected.length ? Math.max(0, Math.round(((expected.length - errors) / expected.length) * 100)) : 100;
+    const marks = totalWords ? Math.max(0, Math.round((correctWords / totalWords) * 100)) : 100;
+    
+    // Keep character-based errors for backward compatibility
+    const errors = expected ? levenshteinDistance(typedText.trim(), expected.trim()) : 0;
 
     await Submission.create({
       userId: req.user.id,
@@ -104,11 +141,14 @@ router.post('/:id/submit', auth, async (req, res) => {
       typedText,
       timeTaken,
       errors,
-      accuracy,
-      wpm
+      accuracy: marks, // Store marks instead of accuracy
+      wpm,
+      totalWords,
+      correctWords,
+      wrongWords
     });
 
-    res.json({ errors, accuracy, wpm });
+    res.json({ errors, accuracy: marks, wpm, totalWords, correctWords, wrongWords });
   } catch (err) {
     console.error('Submit error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -123,7 +163,7 @@ router.get('/:id/results', auth, async (req, res) => {
     const submissions = await Submission.findAll({
       where: { userId: req.user.id, testId: req.params.id },
       order: [['createdAt', 'ASC']],
-      attributes: ['createdAt', 'errors', 'accuracy', 'wpm', 'typedText']
+      attributes: ['createdAt', 'errors', 'accuracy', 'wpm', 'typedText', 'totalWords', 'correctWords', 'wrongWords']
     });
     res.json({ expectedText: test.expectedText, submissions });
   } catch (err) {

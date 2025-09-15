@@ -54,8 +54,8 @@ function computeLCS(a, b) {
 }
 
 function diffWords(originalText, typedText) {
-  const origWords = originalText.trim().split(/\s+/);
-  const typedWords = typedText.trim().split(/\s+/);
+  const origWords = originalText.trim().split(/\s+/).filter(w => w);
+  const typedWords = typedText.trim().split(/\s+/).filter(w => w);
   return computeLCS(origWords, typedWords);
 }
 

@@ -71,7 +71,7 @@ const TestResults = () => {
     labels,
     datasets: [
       {
-        label: 'Accuracy (%)',
+        label: 'Marks',
         data: accuracyData,
         borderColor: '#2980b9',
         backgroundColor: 'rgba(41, 128, 185, 0.2)',
@@ -92,7 +92,7 @@ const TestResults = () => {
       y1: {
         type: 'linear',
         position: 'left',
-        title: { display: true, text: 'Accuracy (%)' }
+        title: { display: true, text: 'Marks' }
       },
       y2: {
         type: 'linear',
@@ -138,8 +138,10 @@ const TestResults = () => {
         <thead>
           <tr>
             <th style={thTdStyle}>Attempt Time</th>
-            <th style={thTdStyle}>Errors</th>
-            <th style={thTdStyle}>Accuracy (%)</th>
+            <th style={thTdStyle}>Total Words</th>
+            <th style={thTdStyle}>Correct Words</th>
+            <th style={thTdStyle}>Wrong Words</th>
+            <th style={thTdStyle}>Marks</th>
             <th style={thTdStyle}>WPM</th>
             <th style={thTdStyle}>Compare</th>
           </tr>
@@ -148,9 +150,11 @@ const TestResults = () => {
           {submissions.map((s, idx) => (
             <tr key={idx}>
               <td style={thTdStyle}>{new Date(s.createdAt).toLocaleString()}</td>
-              <td style={thTdStyle}>{s.errors}</td>
-              <td style={thTdStyle}>{s.accuracy}</td>
-              <td style={thTdStyle}>{s.wpm}</td>
+              <td style={thTdStyle}>{s.totalWords || 0}</td>
+              <td style={thTdStyle}>{s.correctWords || 0}</td>
+              <td style={thTdStyle}>{s.wrongWords || 0}</td>
+              <td style={thTdStyle}>{s.accuracy || 0}</td>
+              <td style={thTdStyle}>{s.wpm || 0}</td>
               <td style={thTdStyle}>
                 <button onClick={() => handleCompare(idx)}>Compare</button>
               </td>

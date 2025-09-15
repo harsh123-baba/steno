@@ -14,6 +14,10 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    dictationWpm: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     audioPath: {
       type: DataTypes.STRING,
       allowNull: false
@@ -24,6 +28,10 @@ module.exports = (sequelize) => {
     expectedText: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    wordCount: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     tableName: 'tests',
