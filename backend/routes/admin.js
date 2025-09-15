@@ -126,6 +126,57 @@ router.get('/users', auth, admin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// PUT endpoint for editing tests
+router.put(
+  '/tests/:id',
+  auth,
+  admin,
+  upload.single('audio'),
+  async (req, res) => {
+    console.log(`[Admin] Edit test request: user=${req.user.id}, testId=${req.params.id}`);
+    try {
+      const test = await Test.findByPk(req.params.id);
+      if (!test) {
+        return res.status(404).json({ message: 'Test not found.' });
+      }
+
+      const { name, category, timeLimit, expectedText, dictationWpm } = req.body;
+      console.log(`[Admin] Edit payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}`);
+      
+      // Update test properties
+      test.name = name || test.name;
+      test.category = category || test.category;
+      test.timeLimit = timeLimit ? Number(timeLimit) : test.timeLimit;
+      test.dictationWpm = dictationWpm || test.dictationWpm;
+      test.expectedText = expectedText || test.expectedText;
+      
+      // Update word count if text changed
+      if (expectedText) {
+        const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
+        test.wordCount = wordCount;
+        console.log(`Word count updated: ${wordCount}`);
+      }
+      
+      // Update audio file if a new one was uploaded
+      if (req.file) {
+        console.log(`[Admin] New audio file uploaded: ${req.file.originalname}`);
+        // Delete old audio file
+        if (fs.existsSync(test.audioPath)) {
+          fs.unlinkSync(test.audioPath);
+        }
+        test.audioPath = req.file.path;
+        test.contentType = req.file.mimetype;
+      }
+
+      await test.save();
+      res.json(test);
+    } catch (err) {
+      console.error(`[Admin] Edit test error: ${err.message}`, err);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
 router.post('/userRole', auth, admin, async (req, res) => {
   const { id, subscriptionType, subscriptionTenure } = req.body;
   try {

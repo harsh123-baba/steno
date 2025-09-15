@@ -22,14 +22,16 @@ const dialogStyle = {
   width: '100%'
 };
 
-const UploadModal = ({ onClose }) => {
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('ssc');
-  const [timeLimit, setTimeLimit] = useState('');
+const UploadModal = ({ onClose, test }) => {
+  const isEditMode = !!test;
+  
+  const [name, setName] = useState(test?.name || '');
+  const [category, setCategory] = useState(test?.category || 'ssc');
+  const [timeLimit, setTimeLimit] = useState(test?.timeLimit || '');
   const [audio, setAudio] = useState(null);
-  const [expectedText, setExpectedText] = useState('');
+  const [expectedText, setExpectedText] = useState(test?.expectedText || '');
   const [message, setMessage] = useState('');
-  const [dictationWpm, setDictationWpm] = useState('');
+  const [dictationWpm, setDictationWpm] = useState(test?.dictationWpm || '');
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
@@ -57,31 +59,55 @@ const UploadModal = ({ onClose }) => {
   console.log(dictationWpm)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !category || !timeLimit || !dictationWpm || !audio || !expectedText) {
+    
+    // For editing, audio is optional
+    if (!isEditMode && (!name || !category || !timeLimit || !dictationWpm || !audio || !expectedText)) {
       setMessage('Please provide all required fields.');
       return;
     }
+    
+    // For editing, only require non-empty fields
+    if (isEditMode && (!name || !category || !timeLimit || !dictationWpm || !expectedText)) {
+      setMessage('Please provide all required fields.');
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('name', name);
     formData.append('category', category);
     formData.append('timeLimit', timeLimit);
     formData.append('dictationWpm', dictationWpm);
-    formData.append('audio', audio);
     formData.append('expectedText', expectedText);
+    
+    // Only append audio if a new file was selected
+    if (audio) {
+      formData.append('audio', audio);
+    }
+    
     try {
-      await api.post('/admin/tests', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setMessage('Upload successful.');
-      setName('');
-      setCategory('ssc');
-      setTimeLimit('');
-      setDictationWpm('');
-      setAudio(null);
-      setExpectedText('');
+      if (isEditMode) {
+        // Use PUT for editing
+        await api.put(`/admin/tests/${test.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setMessage('Test updated successfully.');
+      } else {
+        // Use POST for creating
+        await api.post('/admin/tests', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setMessage('Upload successful.');
+        // Reset form fields only for create mode
+        setName('');
+        setCategory('ssc');
+        setTimeLimit('');
+        setDictationWpm('');
+        setAudio(null);
+        setExpectedText('');
+      }
       setTimeout(onClose, 1000);
     } catch (err) {
-      setMessage('Upload failed.');
+      setMessage(isEditMode ? 'Update failed.' : 'Upload failed.');
       console.error(err);
     }
   };
@@ -89,7 +115,7 @@ const UploadModal = ({ onClose }) => {
   return (
     <div style={modalStyle}>
       <div style={dialogStyle}>
-        <h3>Upload New Test</h3>
+        <h3>{isEditMode ? 'Edit Test' : 'Upload New Test'}</h3>
         {message && <p>{message}</p>}
         <form onSubmit={handleSubmit}>
           <div>
@@ -137,7 +163,13 @@ const UploadModal = ({ onClose }) => {
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Audio File:</label><br />
-            <input type="file" accept="audio/*" onChange={handleAudioChange} required />
+            <input 
+              type="file" 
+              accept="audio/*" 
+              onChange={handleAudioChange} 
+              required={!isEditMode} 
+            />
+            {isEditMode && <small>Leave blank to keep existing audio file</small>}
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Expected Text:</label><br />
@@ -170,7 +202,7 @@ const UploadModal = ({ onClose }) => {
             <button type="button" onClick={onClose} style={{ marginRight: '0.5rem' }}>
               Cancel
             </button>
-            <button type="submit">Upload</button>
+            <button type="submit">{isEditMode ? 'Update' : 'Upload'}</button>
           </div>
         </form>
       </div>

@@ -27,6 +27,7 @@ const TestList = () => {
   const [tests, setTests] = useState([]);
   const { user } = useContext(AuthContext);
   const [showModal, setShowModal] = useState(false);
+  const [editingTest, setEditingTest] = useState(null);
 
   const fetchTests = async () => {
     try {
@@ -42,9 +43,14 @@ const TestList = () => {
     fetchTests();
   }, []);
 
-  const openModal = () => setShowModal(true);
+  const openModal = (test = null) => {
+    setEditingTest(test);
+    setShowModal(true);
+  };
+  
   const closeModal = () => {
     setShowModal(false);
+    setEditingTest(null);
     fetchTests();
   };
 
@@ -126,7 +132,7 @@ const TestList = () => {
                     Delete
                   </button>
                   <button
-                    onClick={openModal}
+                    onClick={() => openModal(test)}
                     style={{
                       backgroundColor: '#27ae60',
                       color: '#fff',
@@ -144,7 +150,7 @@ const TestList = () => {
           </div>
         ))}
       </div>
-      {showModal && <UploadModal onClose={closeModal} />}
+      {showModal && <UploadModal onClose={closeModal} test={editingTest} />}
     </div>
   );
 };
