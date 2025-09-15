@@ -29,13 +29,12 @@ function levenshteinDistance(a, b) {
 // GET all tests (list metadata)
 router.get('/', auth, async (req, res) => {
   try {
-    const tests = await Test.findAll({
-      attributes: ['id', 'name', 'category', 'timeLimit']
-    });
+  const tests = await Test.findAll();
     res.json(tests);
+    console.log(`[${new Date().toISOString()}] GET /tests 200`);
   } catch (err) {
-    console.error('Error in GET /tests:', err.stack);
-    res.status(500).json({ message: 'Server error', error: err.stack });
+    console.log(`[${new Date().toISOString()}] GET /tests 500`);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

@@ -31,6 +31,7 @@ const TestList = () => {
   const fetchTests = async () => {
     try {
       const { data } = await api.get('/tests');
+      console.log(data)
       setTests(data);
     } catch (err) {
       console.error(err);
@@ -87,10 +88,12 @@ const TestList = () => {
                   {test.name}
                 </Link>
               </h3>
-              <div style={{ display: 'flex', gap: '2rem' }}>
-                <p style={{ margin: '0.25rem 0' }}>Category: <strong>{test.category.toUpperCase()}</strong></p>
-                <p style={{ margin: '0.25rem 0' }}>Time Limit: <strong>{test.timeLimit}s</strong></p>
-              </div>
+                <div style={{ display: 'flex', gap: '2rem' }}>
+                  <p style={{ margin: '0.25rem 0' }}>Category: <strong>{test.category.toUpperCase()}</strong></p>
+                  <p style={{ margin: '0.25rem 0' }}>Time Limit: <strong>{test.timeLimit}s</strong></p>
+                  <p style={{ margin: '0.25rem 0' }}>Dictation WPM: <strong>{test.dictationWpm}</strong></p>
+                  <p style={{ margin: '0.25rem 0' }}>Word Count: <strong>{test.wordCount}</strong></p>
+                </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <Link to={`/tests/${test.id}`}>

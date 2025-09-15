@@ -171,7 +171,7 @@ const TestDetail = () => {
           <h2>{name}</h2>
           
           <strong>Timer:</strong> {elapsed}s / {timeLimit}s
-          <button type="submit" style={buttonStyle}>
+          <button type="button" style={buttonStyle} onClick={handleSubmit}>
               Submit (जमा करें)
             </button>
           <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '800px' }}>

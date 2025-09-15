@@ -28,12 +28,13 @@ router.post(
   async (req, res) => {
     console.log(`[Admin] Upload test request: user=${req.user.id}, name=${req.body.name}, category=${req.body.category}`);
     try {
-      const { name, category, timeLimit, expectedText } = req.body;
-      console.log(`[Admin] Payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}`);
+      const { name, category, timeLimit, expectedText, dictationWpm } = req.body;
+      console.log(`[Admin] Payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}`);
       const audioFile = req.file;
       console.log(`[Admin] Received audio file: ${audioFile?.originalname}`);
+      const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
 
-      if (!name || !category || !timeLimit || !audioFile || !expectedText) {
+      if (!name || !category || !timeLimit || !dictationWpm || !audioFile || !expectedText) {
         return res
           .status(400)
           .json({ message: 'All fields are required.' });
@@ -44,6 +45,8 @@ router.post(
         name,
         category,
         timeLimit: Number(timeLimit),
+        dictationWpm: Number(dictationWpm),
+        wordCount,
         audioPath: req.file.path,
         contentType: audioFile.mimetype,
         expectedText

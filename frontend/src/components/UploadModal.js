@@ -29,6 +29,7 @@ const UploadModal = ({ onClose }) => {
   const [audio, setAudio] = useState(null);
   const [expectedText, setExpectedText] = useState('');
   const [message, setMessage] = useState('');
+  const [dictationWpm, setDictationWpm] = useState('');
 
   const handleNameChange = (e) => {
     setName(e.target.value);
@@ -49,10 +50,14 @@ const UploadModal = ({ onClose }) => {
   const handleExpectedTextChange = (content) => {
     setExpectedText(content);
   };
+  const handleDictationWpmChange = (e) => {
+    setDictationWpm(e.target.value);
+  };
+  const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !category || !timeLimit || !audio || !expectedText) {
+    if (!name || !category || !timeLimit || !dictationWpm || !audio || !expectedText) {
       setMessage('Please provide all required fields.');
       return;
     }
@@ -60,6 +65,7 @@ const UploadModal = ({ onClose }) => {
     formData.append('name', name);
     formData.append('category', category);
     formData.append('timeLimit', timeLimit);
+    formData.append('dictationWpm', dictationWpm);
     formData.append('audio', audio);
     formData.append('expectedText', expectedText);
     try {
@@ -119,6 +125,16 @@ const UploadModal = ({ onClose }) => {
             />
           </div>
           <div style={{ marginTop: '0.5rem' }}>
+            <label>Dictation WPM:</label><br />
+            <input
+              type="number"
+              value={dictationWpm}
+              onChange={handleDictationWpmChange}
+              required
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div style={{ marginTop: '0.5rem' }}>
             <label>Audio File:</label><br />
             <input type="file" accept="audio/*" onChange={handleAudioChange} required />
           </div>
@@ -145,6 +161,9 @@ const UploadModal = ({ onClose }) => {
                 `
               }}
             />
+          </div>
+          <div style={{ marginTop: '0.5rem' }}>
+            <p>Word Count: <strong>{wordCount}</strong></p>
           </div>
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
             <button type="button" onClick={onClose} style={{ marginRight: '0.5rem' }}>
