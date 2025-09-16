@@ -22,6 +22,21 @@ const dialogStyle = {
   width: '100%'
 };
 
+const progressBarStyle = {
+  width: '100%',
+  height: '20px',
+  backgroundColor: '#f0f0f0',
+  borderRadius: '10px',
+  overflow: 'hidden',
+  marginTop: '10px'
+};
+
+const progressFillStyle = {
+  height: '100%',
+  backgroundColor: '#4CAF50',
+  transition: 'width 0.3s ease'
+};
+
 const UploadModal = ({ onClose, test }) => {
   const isEditMode = !!test;
   
@@ -32,6 +47,9 @@ const UploadModal = ({ onClose, test }) => {
   const [expectedText, setExpectedText] = useState(test?.expectedText || '');
   const [message, setMessage] = useState('');
   const [dictationWpm, setDictationWpm] = useState(test?.dictationWpm || '');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
@@ -55,8 +73,9 @@ const UploadModal = ({ onClose, test }) => {
   const handleDictationWpmChange = (e) => {
     setDictationWpm(e.target.value);
   };
+  
   const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
-  console.log(dictationWpm)
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -85,16 +104,27 @@ const UploadModal = ({ onClose, test }) => {
     }
     
     try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      
       if (isEditMode) {
         // Use PUT for editing
         await api.put(`/admin/tests/${test.id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
+          }
         });
         setMessage('Test updated successfully.');
       } else {
         // Use POST for creating
         await api.post('/admin/tests', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(progress);
+          }
         });
         setMessage('Upload successful.');
         // Reset form fields only for create mode
@@ -105,8 +135,10 @@ const UploadModal = ({ onClose, test }) => {
         setAudio(null);
         setExpectedText('');
       }
+      setIsUploading(false);
       setTimeout(onClose, 1000);
     } catch (err) {
+      setIsUploading(false);
       setMessage(isEditMode ? 'Update failed.' : 'Upload failed.');
       console.error(err);
     }
@@ -117,6 +149,16 @@ const UploadModal = ({ onClose, test }) => {
       <div style={dialogStyle}>
         <h3>{isEditMode ? 'Edit Test' : 'Upload New Test'}</h3>
         {message && <p>{message}</p>}
+        
+        {isUploading && (
+          <div>
+            <p>Uploading... {uploadProgress}%</p>
+            <div style={progressBarStyle}>
+              <div style={{...progressFillStyle, width: `${uploadProgress}%`}}></div>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit}>
           <div>
             <label>Test Name:</label><br />
@@ -126,6 +168,7 @@ const UploadModal = ({ onClose, test }) => {
               onChange={handleNameChange}
               required
               style={{ width: '100%' }}
+              disabled={isUploading}
             />
           </div>
           <div style={{ marginTop: '0.5rem' }}>
@@ -135,6 +178,7 @@ const UploadModal = ({ onClose, test }) => {
               onChange={handleCategoryChange}
               required
               style={{ width: '100%' }}
+              disabled={isUploading}
             >
               <option value="ssc">SSC</option>
               <option value="court">Court</option>
@@ -149,6 +193,7 @@ const UploadModal = ({ onClose, test }) => {
               onChange={handleTimeLimitChange}
               required
               style={{ width: '100%' }}
+              disabled={isUploading}
             />
           </div>
           <div style={{ marginTop: '0.5rem' }}>
@@ -159,6 +204,7 @@ const UploadModal = ({ onClose, test }) => {
               onChange={handleDictationWpmChange}
               required
               style={{ width: '100%' }}
+              disabled={isUploading}
             />
           </div>
           <div style={{ marginTop: '0.5rem' }}>
@@ -168,6 +214,7 @@ const UploadModal = ({ onClose, test }) => {
               accept="audio/*" 
               onChange={handleAudioChange} 
               required={!isEditMode} 
+              disabled={isUploading}
             />
             {isEditMode && <small>Leave blank to keep existing audio file</small>}
           </div>
@@ -193,16 +240,27 @@ const UploadModal = ({ onClose, test }) => {
                   body { font-family: 'Kruti Dev 010', monospace; }
                 `
               }}
+              disabled={isUploading}
             />
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <p>Word Count: <strong>{wordCount}</strong></p>
           </div>
           <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-            <button type="button" onClick={onClose} style={{ marginRight: '0.5rem' }}>
+            <button 
+              type="button" 
+              onClick={onClose} 
+              style={{ marginRight: '0.5rem' }}
+              disabled={isUploading}
+            >
               Cancel
             </button>
-            <button type="submit">{isEditMode ? 'Update' : 'Upload'}</button>
+            <button 
+              type="submit" 
+              disabled={isUploading}
+            >
+              {isUploading ? 'Uploading...' : (isEditMode ? 'Update' : 'Upload')}
+            </button>
           </div>
         </form>
       </div>

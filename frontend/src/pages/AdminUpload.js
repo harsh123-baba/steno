@@ -3,6 +3,21 @@ import api from '../api';
 import { Editor } from '@tinymce/tinymce-react';
 import DiffViewer from '../components/DiffViewer';
 
+const progressBarStyle = {
+  width: '100%',
+  height: '20px',
+  backgroundColor: '#f0f0f0',
+  borderRadius: '10px',
+  overflow: 'hidden',
+  marginTop: '10px'
+};
+
+const progressFillStyle = {
+  height: '100%',
+  backgroundColor: '#4CAF50',
+  transition: 'width 0.3s ease'
+};
+
 const AdminUpload = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('ssc');
@@ -12,6 +27,8 @@ const AdminUpload = () => {
   const [expectedText, setExpectedText] = useState('');
   const [message, setMessage] = useState('');
   const [typedText, setTypedText] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const handleTypedTextChange = (e) => setTypedText(e.target.value);
 
   const handleNameChange = (e) => setName(e.target.value);
@@ -35,8 +52,14 @@ const AdminUpload = () => {
     formData.append('audio', audio);
     formData.append('expectedText', expectedText);
     try {
+      setIsUploading(true);
+      setUploadProgress(0);
       await api.post('/admin/tests', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(progress);
+        }
       });
       setMessage('Test uploaded successfully.');
       setName('');
@@ -45,9 +68,11 @@ const AdminUpload = () => {
       setDictationWpm('');
       setAudio(null);
       setExpectedText('');
+      setIsUploading(false);
     } catch (err) {
       setMessage('Upload failed.');
       console.error(err);
+      setIsUploading(false);
     }
   };
 
@@ -55,6 +80,14 @@ const AdminUpload = () => {
     <div style={{ padding: '1rem' }}>
       <h2>Upload New Test</h2>
       {message && <p>{message}</p>}
+      {isUploading && (
+        <div>
+          <p>Uploading... {uploadProgress}%</p>
+          <div style={progressBarStyle}>
+            <div style={{...progressFillStyle, width: `${uploadProgress}%`}}></div>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '0.5rem' }}>
           <label>Test Name:</label><br />

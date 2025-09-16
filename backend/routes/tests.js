@@ -74,7 +74,8 @@ router.get('/:id', auth, async (req, res) => {
       category: test.category,
       timeLimit: test.timeLimit,
       audio,
-      contentType
+      contentType,
+      createdAt: test.createdAt
     });
   } catch (err) {
     console.error(err);
