@@ -7,6 +7,7 @@ const AdminUpload = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('ssc');
   const [timeLimit, setTimeLimit] = useState('');
+  const [dictationWpm, setDictationWpm] = useState('');
   const [audio, setAudio] = useState(null);
   const [expectedText, setExpectedText] = useState('');
   const [message, setMessage] = useState('');
@@ -16,12 +17,13 @@ const AdminUpload = () => {
   const handleNameChange = (e) => setName(e.target.value);
   const handleCategoryChange = (e) => setCategory(e.target.value);
   const handleTimeLimitChange = (e) => setTimeLimit(e.target.value);
+  const handleDictationWpmChange = (e) => setDictationWpm(e.target.value);
   const handleFileChange = (e) => setAudio(e.target.files[0]);
   const handleExpectedTextChange = (content) => setExpectedText(content);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !category || !timeLimit || !audio || !expectedText) {
+    if (!name || !category || !timeLimit || !dictationWpm || !audio || !expectedText) {
       setMessage('All fields are required.');
       return;
     }
@@ -29,6 +31,7 @@ const AdminUpload = () => {
     formData.append('name', name);
     formData.append('category', category);
     formData.append('timeLimit', timeLimit);
+    formData.append('dictationWpm', dictationWpm);
     formData.append('audio', audio);
     formData.append('expectedText', expectedText);
     try {
@@ -39,6 +42,7 @@ const AdminUpload = () => {
       setName('');
       setCategory('ssc');
       setTimeLimit('');
+      setDictationWpm('');
       setAudio(null);
       setExpectedText('');
     } catch (err) {
@@ -81,6 +85,16 @@ const AdminUpload = () => {
             type="number"
             value={timeLimit}
             onChange={handleTimeLimitChange}
+            required
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <label>Dictation WPM:</label><br />
+          <input
+            type="number"
+            value={dictationWpm}
+            onChange={handleDictationWpmChange}
             required
             style={{ width: '100%' }}
           />

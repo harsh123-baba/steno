@@ -33,7 +33,6 @@ router.post(
       const audioFile = req.file;
       console.log(`[Admin] Received audio file: ${audioFile?.originalname}`);
       const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
-      console.log("lsdkjfa", dictationWpm)
       if (!name || !category || !timeLimit || !dictationWpm || !audioFile || !expectedText) {
         return res
           .status(400)

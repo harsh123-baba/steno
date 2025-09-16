@@ -69,21 +69,6 @@ const TestList = () => {
     <div>
       <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between' }}>
         <h2>Available Tests</h2>
-        {user && user.isAdmin && (
-          <button
-            onClick={openModal}
-            style={{
-              backgroundColor: '#2980b9',
-              color: '#fff',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Upload New Test
-          </button>
-        )}
       </div>
       <div style={gridStyle}>
         {tests.map((test) => (
