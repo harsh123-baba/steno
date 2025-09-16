@@ -25,7 +25,7 @@ console.log('Connecting to MySQL...');
 sequelize
   .authenticate()
   .then(() => sequelize.query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"))
-  .then(() => sequelize.sync({ alter: true }))
+  .then(() => sequelize.sync({ alter: false }))
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     cron.schedule('0 0 * * *', async () => {
@@ -50,4 +50,15 @@ sequelize
       }
     });
   })
-  .catch((err) => console.error(err));
+  .catch((err) => {
+    console.error('Database sync error:', err);
+    // Try a safer sync approach
+    return sequelize.sync({ alter: false });
+  })
+  .then(() => {
+    console.log('Database connected and synced successfully');
+  })
+  .catch((err) => {
+    console.error('Unable to start server due to database error:', err);
+    process.exit(1);
+  });

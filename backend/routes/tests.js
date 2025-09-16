@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { Test, Submission } = require('../db').models;
 const { auth } = require('../middleware/auth');
+const { Op } = require('sequelize');
 const router = express.Router();
 
 // Levenshtein distance algorithm
@@ -26,11 +27,43 @@ function levenshteinDistance(a, b) {
   return matrix[b.length][a.length];
 }
 
-// GET all tests (list metadata)
+// GET all tests (list metadata) with pagination support
 router.get('/', auth, async (req, res) => {
   try {
-  const tests = await Test.findAll();
-    res.json(tests);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Also support search if provided
+    const search = req.query.search || '';
+    
+    let whereClause = {};
+    if (search) {
+      whereClause = {
+        [Op.or]: [
+          { name: { [Op.like]: `%${search}%` } },
+          { category: { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+    
+    const { count, rows: tests } = await Test.findAndCountAll({
+      where: whereClause,
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']]
+    });
+    
+    res.json({
+      tests,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        totalTests: count,
+        hasNext: page < Math.ceil(count / limit),
+        hasPrev: page > 1
+      }
+    });
     console.log(`[${new Date().toISOString()}] GET /tests 200`);
   } catch (err) {
     console.log(`[${new Date().toISOString()}] GET /tests 500`);
@@ -38,21 +71,40 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// GET results overview for all tests
+// GET results overview for all tests with pagination support
 router.get('/results/all', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
     const submissionsData = await Submission.findAll({
       where: { userId: req.user.id },
       order: [['createdAt', 'ASC']],
       include: [{ model: Test, attributes: ['id', 'name', 'category', 'timeLimit'] }]
     });
+    
     const grouped = submissionsData.reduce((acc, cur) => {
       const id = cur.Test.id;
       if (!acc[id]) acc[id] = { test: cur.Test, submissions: [] };
       acc[id].submissions.push(cur);
       return acc;
     }, {});
-    res.json(Object.values(grouped));
+    
+    const allResults = Object.values(grouped);
+    const totalResults = allResults.length;
+    const paginatedResults = allResults.slice(offset, offset + limit);
+    
+    res.json({
+      results: paginatedResults,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalResults / limit),
+        totalResults: totalResults,
+        hasNext: page < Math.ceil(totalResults / limit),
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -83,35 +135,26 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Function to calculate word-based differences
 function calculateWordDifferences(expectedText, typedText) {
   const expectedWords = expectedText.trim().split(/\s+/).filter(w => w);
   const typedWords = typedText.trim().split(/\s+/).filter(w => w);
   
   const totalWords = expectedWords.length;
   let correctWords = 0;
-  let wrongWords = 0;
   
-  // Compare words at each position
-  const minLength = Math.min(expectedWords.length, typedWords.length);
-  for (let i = 0; i < minLength; i++) {
-    if (expectedWords[i] === typedWords[i]) {
+  const typedWordsMap = {};
+  typedWords.forEach(word => {
+    typedWordsMap[word] = (typedWordsMap[word] || 0) + 1;
+  });
+  
+  expectedWords.forEach(word => {
+    if (typedWordsMap[word] > 0) {
       correctWords++;
-    } else {
-      wrongWords++;
+      typedWordsMap[word]--;
     }
-  }
+  });
   
-  // Handle extra words in typed text
-  if (typedWords.length > expectedWords.length) {
-    wrongWords += typedWords.length - expectedWords.length;
-  }
-  
-  // Handle missing words
-  if (expectedWords.length > typedWords.length) {
-    wrongWords += expectedWords.length - typedWords.length;
-  }
-  
+  const wrongWords = totalWords - correctWords;
   return { totalWords, correctWords, wrongWords };
 }
 

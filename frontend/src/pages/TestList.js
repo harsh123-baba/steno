@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import AuthContext from '../contexts/AuthContext';
@@ -59,6 +59,64 @@ const activeButtonStyle = {
   color: '#fff'
 };
 
+const loadingStyle = {
+  textAlign: 'center',
+  padding: '2rem'
+};
+
+const skeletonCardStyle = {
+  backgroundColor: '#fff',
+  padding: '1.5rem',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  marginBottom: '1rem'
+};
+
+const skeletonLineStyle = {
+  height: '1rem',
+  backgroundColor: '#e0e0e0',
+  borderRadius: '4px',
+  marginBottom: '0.5rem'
+};
+
+const skeletonCircleStyle = {
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#e0e0e0',
+  animation: 'spin 1s linear infinite'
+};
+
+const spinnerStyle = {
+  border: '4px solid #f3f3f3',
+  borderTop: '4px solid #3498db',
+  borderRadius: '50%',
+  width: '40px',
+  height: '40px',
+  animation: 'spin 1s linear infinite',
+  margin: '0 auto'
+};
+
+// Add keyframes for animations
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+`;
+document.head.appendChild(style);
+
 const TestList = () => {
   const [tests, setTests] = useState([]);
   const { user } = useContext(AuthContext);
@@ -66,38 +124,39 @@ const TestList = () => {
   const [editingTest, setEditingTest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const testsPerPage = 10;
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalTests, setTotalTests] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const testsPerPage = 5;
 
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async (page = 1, search = '') => {
+    setLoading(true);
+    setError(null);
     try {
-      const { data } = await api.get('/tests');
-      // Sort by latest first (assuming tests have a createdAt field)
-      const sortedTests = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setTests(sortedTests);
-      setCurrentPage(1); // Reset to first page when tests are fetched
+      const response = await api.get('/tests', {
+        params: {
+          page: page,
+          limit: testsPerPage,
+          search: search
+        }
+      });
+      
+      setTests(response.data.tests);
+      setTotalPages(response.data.pagination.totalPages);
+      setTotalTests(response.data.pagination.totalTests);
+      setCurrentPage(response.data.pagination.currentPage);
     } catch (err) {
       console.error(err);
+      setError('Failed to fetch tests');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchTests();
   }, []);
 
-  // Filter tests based on search term
-  const filteredTests = useMemo(() => {
-    if (!searchTerm) return tests;
-    return tests.filter(test => 
-      test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      test.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [tests, searchTerm]);
-
-  // Get current tests for pagination
-  const indexOfLastTest = currentPage * testsPerPage;
-  const indexOfFirstTest = indexOfLastTest - testsPerPage;
-  const currentTests = filteredTests.slice(indexOfFirstTest, indexOfLastTest);
-  const totalPages = Math.ceil(filteredTests.length / testsPerPage);
+  useEffect(() => {
+    fetchTests(currentPage, searchTerm);
+  }, [fetchTests, currentPage, searchTerm]);
 
   const openModal = (test = null) => {
     setEditingTest(test);
@@ -107,16 +166,17 @@ const TestList = () => {
   const closeModal = () => {
     setShowModal(false);
     setEditingTest(null);
-    fetchTests();
+    fetchTests(currentPage, searchTerm);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this test?')) {
       try {
         await api.delete(`/admin/tests/${id}`);
-        fetchTests();
+        fetchTests(currentPage, searchTerm);
       } catch (err) {
         console.error(err);
+        setError('Failed to delete test');
       }
     }
   };
@@ -134,8 +194,23 @@ const TestList = () => {
     if (totalPages <= 1) return null;
 
     const pageNumbers = [];
+    // Show first page, last page, current page, and nearby pages
+    const delta = 2; // Number of pages to show around current page
+    
     for (let i = 1; i <= totalPages; i++) {
-      pageNumbers.push(i);
+      if (
+        i === 1 || 
+        i === totalPages || 
+        (i >= currentPage - delta && i <= currentPage + delta)
+      ) {
+        pageNumbers.push(i);
+      } else if (
+        i === currentPage - delta - 1 || 
+        i === currentPage + delta + 1
+      ) {
+        // Add ellipsis
+        pageNumbers.push('...');
+      }
     }
 
     return (
@@ -143,25 +218,30 @@ const TestList = () => {
         <button 
           style={buttonStyle} 
           onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || loading}
         >
           Previous
         </button>
         
-        {pageNumbers.map(number => (
-          <button
-            key={number}
-            style={number === currentPage ? activeButtonStyle : buttonStyle}
-            onClick={() => handlePageChange(number)}
-          >
-            {number}
-          </button>
+        {pageNumbers.map((number, index) => (
+          number === '...' ? (
+            <span key={`ellipsis-${index}`} style={{ padding: '0.5rem' }}>...</span>
+          ) : (
+            <button
+              key={number}
+              style={number === currentPage ? activeButtonStyle : buttonStyle}
+              onClick={() => handlePageChange(number)}
+              disabled={loading}
+            >
+              {number}
+            </button>
+          )
         ))}
         
         <button 
           style={buttonStyle} 
           onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || loading}
         >
           Next
         </button>
@@ -169,10 +249,43 @@ const TestList = () => {
     );
   };
 
+  // Render skeleton loaders when loading and no tests are available
+  if (loading && tests.length === 0) {
+    return (
+      <div>
+        <div style={searchStyle}>
+          <h2>Available Tests</h2>
+          <div style={{...inputStyle, backgroundColor: '#e0e0e0', animation: 'pulse 1.5s infinite'}}></div>
+        </div>
+        
+        <div style={gridStyle}>
+          {[...Array(3)].map((_, index) => (
+            <div key={index} style={skeletonCardStyle}>
+              <div style={{ flex: 1 }}>
+                <div style={{...skeletonLineStyle, width: '60%', height: '1.5rem', marginBottom: '1rem'}}></div>
+                <div style={{...skeletonLineStyle, width: '40%'}}></div>
+                <div style={{...skeletonLineStyle, width: '30%'}}></div>
+                <div style={{...skeletonLineStyle, width: '35%'}}></div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{...skeletonLineStyle, width: '60px', height: '30px'}}></div>
+                <div style={{...skeletonLineStyle, width: '60px', height: '30px'}}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div style={loadingStyle}>Error: {error}</div>;
+  }
+
   return (
     <div>
       <div style={searchStyle}>
-        <h2>Available Tests</h2>
+        <h2>Available Tests {totalTests > 0 && `(${totalTests})`}</h2>
         <input
           type="text"
           placeholder="Search tests..."
@@ -182,8 +295,14 @@ const TestList = () => {
         />
       </div>
       
+      {loading && (
+        <div style={loadingStyle}>
+          <div style={spinnerStyle}></div>
+        </div>
+      )}
+      
       <div style={gridStyle}>
-        {currentTests.map((test) => (
+        {tests.map((test) => (
           <div key={test.id} style={cardStyle}>
             <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 0.5rem 0' }}>
@@ -247,6 +366,12 @@ const TestList = () => {
           </div>
         ))}
       </div>
+      
+      {tests.length === 0 && !loading && (
+        <div style={loadingStyle}>
+          {searchTerm ? 'No tests found matching your search.' : 'No tests available.'}
+        </div>
+      )}
       
       {renderPagination()}
       
