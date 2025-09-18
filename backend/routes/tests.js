@@ -85,6 +85,9 @@ router.get('/results/all', auth, async (req, res) => {
     });
     
     const grouped = submissionsData.reduce((acc, cur) => {
+      // Skip submissions where Test is null (test was deleted but submission remains)
+      if (!cur.Test) return acc;
+      
       const id = cur.Test.id;
       if (!acc[id]) acc[id] = { test: cur.Test, submissions: [] };
       acc[id].submissions.push(cur);
