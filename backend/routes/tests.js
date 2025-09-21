@@ -135,13 +135,21 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+function cleanPTagWords(wordsArray) {
+  return wordsArray.map(word =>
+    word.replace(/^<p>/, '').replace(/<\/p>$/, '')
+  );
+}
+
 function calculateWordDifferences(expectedText, typedText) {
-  const expectedWords = expectedText.trim().split(/\s+/).filter(w => w);
-  const typedWords = typedText.trim().split(/\s+/).filter(w => w);
-  
+  let expectedWords = expectedText.trim().split(/\s+/).filter(w => w);
+  let typedWords = typedText.trim().split(/\s+/).filter(w => w);
   const totalWords = expectedWords.length;
+  expectedWords = cleanPTagWords(expectedWords);
+  typedWords = cleanPTagWords(typedWords);
   let correctWords = 0;
-  
+  console.log("sjdkfnhjaksfh", expectedWords, typedWords)
+
   const typedWordsMap = {};
   typedWords.forEach(word => {
     typedWordsMap[word] = (typedWordsMap[word] || 0) + 1;
@@ -169,6 +177,8 @@ router.post('/:id/submit', auth, async (req, res) => {
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
     const expected = test.expectedText || '';
+    console.log(expected)
+    console.log(typedText)
     
     // Calculate word-based metrics
     const { totalWords, correctWords, wrongWords } = calculateWordDifferences(expected, typedText);
