@@ -80,7 +80,7 @@ router.get('/results/all', auth, async (req, res) => {
     
     const submissionsData = await Submission.findAll({
       where: { userId: req.user.id },
-      order: [['createdAt', 'ASC']],
+      order: [['createdAt', 'DESC']],
       include: [{ model: Test, attributes: ['id', 'name', 'category', 'timeLimit'] }]
     });
     
@@ -135,18 +135,20 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-function cleanPTagWords(wordsArray) {
-  return wordsArray.map(word =>
-    word.replace(/^<p>/, '').replace(/<\/p>$/, '')
-  );
+
+function cleanPTagString(str) {
+  if (str.length > 7) {  // 3 + 4 = 7 chars total
+    return str.substring(3, str.length - 4);
+  } else {
+    return '';
+  }
 }
+
 
 function calculateWordDifferences(expectedText, typedText) {
   let expectedWords = expectedText.trim().split(/\s+/).filter(w => w);
   let typedWords = typedText.trim().split(/\s+/).filter(w => w);
   const totalWords = expectedWords.length;
-  expectedWords = cleanPTagWords(expectedWords);
-  typedWords = cleanPTagWords(typedWords);
   let correctWords = 0;
   console.log("sjdkfnhjaksfh", expectedWords, typedWords)
 
@@ -169,18 +171,21 @@ function calculateWordDifferences(expectedText, typedText) {
 // Submit typing result
 router.post('/:id/submit', auth, async (req, res) => {
   try {
-    const { typedText, timeTaken } = req.body;
+    let { typedText, timeTaken } = req.body;
     if (typedText == null || timeTaken == null) {
       return res.status(400).json({ message: 'typedText and timeTaken are required.' });
     }
     const test = await Test.findByPk(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test not found' });
 
-    const expected = test.expectedText || '';
+    let expected = test.expectedText || '';
     console.log(expected)
     console.log(typedText)
     
     // Calculate word-based metrics
+    expected = cleanPTagString(expected);
+    typedText = cleanPTagString(typedText);
+
     const { totalWords, correctWords, wrongWords } = calculateWordDifferences(expected, typedText);
     const wordsTyped = typedText.trim().split(/\s+/).filter(w => w).length;
     const wpm = Math.round((wordsTyped / (timeTaken / 60)) || 0);
@@ -216,7 +221,7 @@ router.get('/:id/results', auth, async (req, res) => {
     if (!test) return res.status(404).json({ message: 'Test not found' });
     const submissions = await Submission.findAll({
       where: { userId: req.user.id, testId: req.params.id },
-      order: [['createdAt', 'ASC']],
+      order: [['createdAt', 'DESC']],
       attributes: ['createdAt', 'errors', 'accuracy', 'wpm', 'typedText', 'totalWords', 'correctWords', 'wrongWords']
     });
     res.json({ expectedText: test.expectedText, submissions });

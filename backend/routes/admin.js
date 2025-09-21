@@ -75,6 +75,8 @@ router.post('/promote', auth, admin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
 router.delete('/tests/:id', auth, admin,
   async (req, res) => {
     try {
@@ -105,6 +107,8 @@ router.delete('/tests/:id', auth, admin,
     }
   }
 );
+
+
 router.get('/users', auth, admin, async (req, res) => {
   try {
     let users = await User.findAll({ attributes: ['id', 'username', 'email', 'phone', 'isAdmin', 'isPremium', 'subscriptionType', 'subscriptionTenure', 'subscriptionStart', 'subscriptionExpiry', 'createdAt'] });
@@ -125,7 +129,8 @@ router.get('/users', auth, admin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-// PUT endpoint for editing tests
+
+
 router.put(
   '/tests/:id',
   auth,
