@@ -194,8 +194,7 @@ const TestList = () => {
     if (totalPages <= 1) return null;
 
     const pageNumbers = [];
-    // Show first page, last page, current page, and nearby pages
-    const delta = 2; // Number of pages to show around current page
+    const delta = 2;
     
     for (let i = 1; i <= totalPages; i++) {
       if (
@@ -208,7 +207,6 @@ const TestList = () => {
         i === currentPage - delta - 1 || 
         i === currentPage + delta + 1
       ) {
-        // Add ellipsis
         pageNumbers.push('...');
       }
     }
@@ -315,6 +313,8 @@ const TestList = () => {
                   <p style={{ margin: '0.25rem 0' }}>Time Limit: <strong>{formatTime(test.timeLimit)}</strong></p>
                   <p style={{ margin: '0.25rem 0' }}>Dictation WPM: <strong>{test.dictationWpm}</strong></p>
                   <p style={{ margin: '0.25rem 0' }}>Word Count: <strong>{test.wordCount}</strong></p>
+                  <p style={{ margin: '0.25rem 0' }}>Audio duration: <strong>{formatTime(test.audioDuration)}</strong></p>
+
                 </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>

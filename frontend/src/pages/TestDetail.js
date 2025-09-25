@@ -69,6 +69,8 @@ const TestDetail = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [timeLimit, setTimeLimit] = useState(0);
+  const [dictationWpm, setDictationWpm] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const [dictationWords, setDictationWords] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -82,6 +84,8 @@ const TestDetail = () => {
         setName(data.name);
         setCategory(data.category);
         setTimeLimit(data.timeLimit);
+        setDictationWpm(data.dictationWpm || 0);
+        setAudioDuration(data.audioDuration || 0);
       } catch (err) {
         console.error(err);
       } finally {

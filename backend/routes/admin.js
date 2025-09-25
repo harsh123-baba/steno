@@ -4,22 +4,38 @@ const { Test, User } = require('../db').models;
 const { auth, admin } = require('../middleware/auth');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-const util = require('util');
-const execPromise = util.promisify(exec);
+const ffmpeg = require('fluent-ffmpeg');
 
 const router = express.Router();
 
 // Helper function to get audio duration
-async function getAudioDuration(audioPath) {
+async function getAudioDuration(filePath) {
   try {
-    const { stdout } = await execPromise(`ffprobe -v error -show_entries format=duration -of default=nw=1 "${audioPath}"`);
-    const duration = parseFloat(stdout);
-    return isNaN(duration) ? null : Math.round(duration);
-  } catch (error) {
-    console.error('Error getting audio duration:', error);
-    return null;
+    // Try with music-metadata first
+    const mm = await import('music-metadata');
+    const metadata = await mm.parseFile(filePath);
+    if (metadata.format.duration) {
+      return Math.round(metadata.format.duration);
+    }
+  } catch (err) {
+    console.warn('music-metadata failed:', err.message);
   }
+
+  // Fallback to ffprobe
+  return new Promise((resolve) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) {
+        console.error('ffprobe error:', err.message);
+        resolve(null);
+        return;
+      }
+      if (metadata.format && metadata.format.duration) {
+        resolve(Math.round(metadata.format.duration));
+      } else {
+        resolve(null);
+      }
+    });
+  });
 }
 
 // Helper function to get word count
@@ -69,7 +85,7 @@ router.post(
       dictationWpm,
       expectedText,
       wordCount: getWordCount(expectedText),
-      audioPath: `/uploads/${req.file.filename}`,
+      audioPath: req.file.path,
       contentType: req.file.mimetype,
       audioDuration
     });
@@ -193,6 +209,10 @@ router.put(
         }
         test.audioPath = req.file.path;
         test.contentType = req.file.mimetype;
+        
+        // Update audio duration
+        const audioDuration = await getAudioDuration(req.file.path);
+        test.audioDuration = audioDuration;
       }
 
       await test.save();
@@ -232,3 +252,4 @@ router.post('/userRole', auth, admin, async (req, res) => {
   }
 });
 module.exports = router;
+module.exports.getAudioDuration = getAudioDuration;

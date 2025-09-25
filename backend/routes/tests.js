@@ -27,14 +27,12 @@ function levenshteinDistance(a, b) {
   return matrix[b.length][a.length];
 }
 
-// GET all tests (list metadata) with pagination support
 router.get('/', auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     
-    // Also support search if provided
     const search = req.query.search || '';
     
     let whereClause = {};
@@ -129,6 +127,8 @@ router.get('/:id', auth, async (req, res) => {
       name: test.name,
       category: test.category,
       timeLimit: test.timeLimit,
+      dictationWpm: test.dictationWpm,
+      audioDuration: test.audioDuration,
       audio,
       contentType,
       createdAt: test.createdAt
@@ -172,7 +172,6 @@ function calculateWordDifferences(expectedText, typedText) {
   return { totalWords, correctWords, wrongWords };
 }
 
-// Submit typing result
 router.post('/:id/submit', auth, async (req, res) => {
   try {
     let { typedText, timeTaken } = req.body;
@@ -218,7 +217,6 @@ router.post('/:id/submit', auth, async (req, res) => {
   }
 });
 
-// GET results for a single test
 router.get('/:id/results', auth, async (req, res) => {
   try {
     const test = await Test.findByPk(req.params.id);
