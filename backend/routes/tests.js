@@ -67,6 +67,7 @@ router.get('/', auth, async (req, res) => {
     console.log(`[${new Date().toISOString()}] GET /tests 200`);
   } catch (err) {
     console.log(`[${new Date().toISOString()}] GET /tests 500`);
+    console.error('Error in GET /tests:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -85,6 +86,9 @@ router.get('/results/all', auth, async (req, res) => {
     });
     
     const grouped = submissionsData.reduce((acc, cur) => {
+      // Skip submissions where the test has been deleted
+      if (!cur.Test) return acc;
+      
       const id = cur.Test.id;
       if (!acc[id]) acc[id] = { test: cur.Test, submissions: [] };
       acc[id].submissions.push(cur);
@@ -116,7 +120,7 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const test = await Test.findByPk(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test not found' });
-    const filePath = test.audioPath;
+    const filePath = process.env.AUDIO_STORAGE_PATH ? path.join(process.env.AUDIO_STORAGE_PATH, path.basename(test.audioPath)) : test.audioPath;
     const audioBuffer = fs.readFileSync(filePath);
     const audio = audioBuffer.toString('base64');
     const contentType = test.contentType;

@@ -32,6 +32,10 @@ module.exports = (sequelize) => {
     wordCount: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    audioDuration: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     tableName: 'tests',

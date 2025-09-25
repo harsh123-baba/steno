@@ -4,8 +4,28 @@ const { Test, User } = require('../db').models;
 const { auth, admin } = require('../middleware/auth');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
 const router = express.Router();
+
+// Helper function to get audio duration
+async function getAudioDuration(audioPath) {
+  try {
+    const { stdout } = await execPromise(`ffprobe -v error -show_entries format=duration -of default=nw=1 "${audioPath}"`);
+    const duration = parseFloat(stdout);
+    return isNaN(duration) ? null : Math.round(duration);
+  } catch (error) {
+    console.error('Error getting audio duration:', error);
+    return null;
+  }
+}
+
+// Helper function to get word count
+function getWordCount(text) {
+  return text.trim().split(/\s+/).filter(w => w).length;
+}
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
@@ -40,16 +60,19 @@ router.post(
       }
 
       console.log(`Word count: ${wordCount}`)
-      const test = await Test.create({
-        name,
-        category,
-        timeLimit: Number(timeLimit),
-        dictationWpm: dictationWpm,
-        wordCount,
-        audioPath: req.file.path,
-        contentType: audioFile.mimetype,
-        expectedText
-      });
+    const audioDuration = await getAudioDuration(req.file.path);
+
+    const test = await Test.create({
+      name,
+      category,
+      timeLimit,
+      dictationWpm,
+      expectedText,
+      wordCount: getWordCount(expectedText),
+      audioPath: `/uploads/${req.file.filename}`,
+      contentType: req.file.mimetype,
+      audioDuration
+    });
 
       res.json(test);
     } catch (err) {

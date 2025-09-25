@@ -172,7 +172,7 @@ const TestDetail = () => {
         <div style={overlayStyle}>
           <h2>{name}</h2>
           
-          <strong>Timer:</strong> {elapsed}s / {timeLimit}s
+          <strong>Timer:</strong> {Math.floor(elapsed / 60)}m {elapsed % 60}s / {Math.floor(timeLimit / 60)}m {timeLimit % 60}s
           <button type="button" style={buttonStyle} onClick={handleSubmit}>
               Submit (जमा करें)
             </button>
