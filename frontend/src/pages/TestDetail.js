@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
+import AuthContext from '../contexts/AuthContext';
 import typeHindi from 'type-hindi';
 import { Editor } from '@tinymce/tinymce-react';
 const containerStyle = {
@@ -59,6 +60,7 @@ const submitTopStyle = {
 const TestDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const audioRef = useRef(null);
 
   // State declarations
@@ -74,18 +76,30 @@ const TestDetail = () => {
   const [dictationWords, setDictationWords] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [testType, setTestType] = useState('');
+  const [canTakeTest, setCanTakeTest] = useState(true);
 
   // Fetch test metadata and audio
   useEffect(() => {
     const fetchTest = async () => {
       try {
         const { data } = await api.get(`/tests/${id}`);
+        // Check if user has access to this test
+        if (data.testType === 'premium' && (!user || !user.isPremium)) {
+          // Only premium users can take premium tests
+          setCanTakeTest(false);
+        } else {
+          // All users can take free and go-live tests
+          setCanTakeTest(true);
+        }
+        
         setAudioUrl(`data:${data.contentType};base64,${data.audio}`);
         setName(data.name);
         setCategory(data.category);
         setTimeLimit(data.timeLimit);
         setDictationWpm(data.dictationWpm || 0);
         setAudioDuration(data.audioDuration || 0);
+        setTestType(data.testType);
       } catch (err) {
         console.error(err);
       } finally {
@@ -93,7 +107,7 @@ const TestDetail = () => {
       }
     };
     fetchTest();
-  }, [id]);
+  }, [id, user, navigate]);
 
   // Auto-play audio when loaded
   useEffect(() => {
@@ -158,6 +172,18 @@ const TestDetail = () => {
         <div style={containerStyle}>
           <div style={cardStyle}>
             <h2>{name}</h2>
+            {testType === 'premium' && !canTakeTest && (
+              <div style={{ 
+                backgroundColor: '#fff3cd', 
+                border: '1px solid #ffeaa7', 
+                borderRadius: '4px', 
+                padding: '1rem', 
+                marginBottom: '1rem',
+                color: '#856404'
+              }}>
+                <strong>Premium Test:</strong> This is a premium test. Please upgrade to a premium subscription to take this test.
+              </div>
+            )}
             <audio
               ref={audioRef}
               src={audioUrl}
@@ -165,11 +191,29 @@ const TestDetail = () => {
               autoPlay
               onEnded={handleEnded}
             />
-            <button style={buttonStyle} onClick={handleSkip}>
-              Skip and Start Typing
-            </button>
+            {canTakeTest ? (
+              <button style={buttonStyle} onClick={handleSkip}>
+                Skip and Start Typing
+              </button>
+            ) : (
+              <button 
+                style={{...buttonStyle, backgroundColor: '#6c757d', cursor: 'not-allowed'}} 
+                disabled
+              >
+                Upgrade to Take Test
+              </button>
+            )}
             <p><strong>Category:</strong> {category}</p>
             <p><strong>Time Limit:</strong> {timeLimit}s</p>
+            {testType === 'premium' && (
+              <p><strong>Type:</strong> <span style={{ backgroundColor: '#8e44ad', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>PREMIUM</span></p>
+            )}
+            {testType === 'free' && (
+              <p><strong>Type:</strong> <span style={{ backgroundColor: '#27ae60', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>FREE</span></p>
+            )}
+            {testType === 'go-live' && (
+              <p><strong>Type:</strong> <span style={{ backgroundColor: '#3498db', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>GO-LIVE</span></p>
+            )}
           </div>
         </div>
       ) : (

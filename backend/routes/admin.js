@@ -64,8 +64,8 @@ router.post(
   async (req, res) => {
     console.log(`[Admin] Upload test request: user=${req.user.id}, name=${req.body.name}, category=${req.body.category}`);
     try {
-      const { name, category, timeLimit, expectedText, dictationWpm } = req.body;
-      console.log(`[Admin] Payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}`);
+      const { name, category, timeLimit, expectedText, dictationWpm, testType } = req.body;
+      console.log(`[Admin] Payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}, testType=${testType}`);
       const audioFile = req.file;
       console.log(`[Admin] Received audio file: ${audioFile?.originalname}`);
       const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
@@ -87,7 +87,8 @@ router.post(
       wordCount: getWordCount(expectedText),
       audioPath: req.file.path,
       contentType: req.file.mimetype,
-      audioDuration
+      audioDuration,
+      testType: testType || 'hidden'
     });
 
       res.json(test);
@@ -183,8 +184,8 @@ router.put(
         return res.status(404).json({ message: 'Test not found.' });
       }
 
-      const { name, category, timeLimit, expectedText, dictationWpm } = req.body;
-      console.log(`[Admin] Edit payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}`);
+      const { name, category, timeLimit, expectedText, dictationWpm, testType } = req.body;
+      console.log(`[Admin] Edit payload: timeLimit=${timeLimit}, expectedTextLength=${expectedText?.length}, dictationWpm=${dictationWpm}, testType=${testType}`);
       
       // Update test properties
       test.name = name || test.name;
@@ -192,6 +193,7 @@ router.put(
       test.timeLimit = timeLimit ? Number(timeLimit) : test.timeLimit;
       test.dictationWpm = dictationWpm || test.dictationWpm;
       test.expectedText = expectedText || test.expectedText;
+      test.testType = testType || test.testType;
       
       // Update word count if text changed
       if (expectedText) {

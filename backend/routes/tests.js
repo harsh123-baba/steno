@@ -35,6 +35,7 @@ router.get('/', auth, async (req, res) => {
     
     const search = req.query.search || '';
     
+    // Build where clause for search
     let whereClause = {};
     if (search) {
       whereClause = {
@@ -44,6 +45,20 @@ router.get('/', auth, async (req, res) => {
         ]
       };
     }
+    
+    // Show all tests to all users (except admins who see everything)
+    if (!req.user.isAdmin) {
+      // For non-admin users, show free, premium, and go-live tests
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { testType: 'free' },
+          { testType: 'premium' },
+          { testType: 'go-live' }
+        ]
+      };
+    }
+    // Admin users see all tests, so no additional filtering needed
     
     const { count, rows: tests } = await Test.findAndCountAll({
       where: whereClause,
@@ -118,6 +133,19 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const test = await Test.findByPk(req.params.id);
     if (!test) return res.status(404).json({ message: 'Test not found' });
+    
+    // Check if user has access to this test based on test type
+    if (!req.user.isAdmin) {
+      if (test.testType === 'hidden') {
+        // Only admins can access hidden tests
+        return res.status(403).json({ message: 'Access denied' });
+      } else if (test.testType === 'premium' && !req.user.isPremium) {
+        // Only premium users can access premium tests
+        return res.status(403).json({ message: 'Access denied. Premium subscription required.' });
+      }
+      // Free and go-live tests are accessible to all users
+    }
+    
     const filePath = process.env.AUDIO_STORAGE_PATH ? path.join(process.env.AUDIO_STORAGE_PATH, path.basename(test.audioPath)) : test.audioPath;
     const audioBuffer = fs.readFileSync(filePath);
     const audio = audioBuffer.toString('base64');
@@ -131,7 +159,8 @@ router.get('/:id', auth, async (req, res) => {
       audioDuration: test.audioDuration,
       audio,
       contentType,
-      createdAt: test.createdAt
+      createdAt: test.createdAt,
+      testType: test.testType // Include test type in response for frontend
     });
   } catch (err) {
     console.error(err);

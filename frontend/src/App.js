@@ -13,6 +13,7 @@ import ResultsOverview from './pages/ResultsOverview';
 import AdminUpload from './pages/AdminUpload';
 import AdminAssign from './pages/AdminAssign';
 import AdminUsers from './pages/AdminUsers';
+import PricingPage from './pages/PricingPage';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -97,6 +98,14 @@ function App() {
               <AdminRoute>
                 <AdminUsers />
               </AdminRoute>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <PrivateRoute>
+                <PricingPage />
+              </PrivateRoute>
             }
           />
           <Route path="*" element={<Navigate to="/" />} />

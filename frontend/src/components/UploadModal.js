@@ -47,6 +47,7 @@ const UploadModal = ({ onClose, test }) => {
   const [expectedText, setExpectedText] = useState(test?.expectedText || '');
   const [message, setMessage] = useState('');
   const [dictationWpm, setDictationWpm] = useState(test?.dictationWpm || '');
+  const [testType, setTestType] = useState(test?.testType || 'hidden');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -74,6 +75,10 @@ const UploadModal = ({ onClose, test }) => {
     setDictationWpm(e.target.value);
   };
   
+  const handleTestTypeChange = (e) => {
+    setTestType(e.target.value);
+  };
+  
   const wordCount = expectedText.trim().split(/\s+/).filter(w => w).length;
 
   const handleSubmit = async (e) => {
@@ -97,6 +102,7 @@ const UploadModal = ({ onClose, test }) => {
     formData.append('timeLimit', timeLimit);
     formData.append('dictationWpm', dictationWpm);
     formData.append('expectedText', expectedText);
+    formData.append('testType', testType);
     
     // Only append audio if a new file was selected
     if (audio) {
@@ -206,6 +212,20 @@ const UploadModal = ({ onClose, test }) => {
               style={{ width: '100%' }}
               disabled={isUploading}
             />
+          </div>
+          <div style={{ marginTop: '0.5rem' }}>
+            <label>Test Type:</label><br />
+            <select
+              value={testType}
+              onChange={handleTestTypeChange}
+              required
+              style={{ width: '100%' }}
+              disabled={isUploading}
+            >
+              <option value="free">Free</option>
+              <option value="premium">Premium</option>
+              <option value="hidden">Hidden</option>
+            </select>
           </div>
           <div style={{ marginTop: '0.5rem' }}>
             <label>Audio File:</label><br />

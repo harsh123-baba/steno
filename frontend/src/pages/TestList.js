@@ -304,9 +304,15 @@ const TestList = () => {
           <div key={test.id} style={cardStyle}>
             <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 0.5rem 0' }}>
-                <Link to={`/tests/${test.id}`} style={{ textDecoration: 'none', color: '#2c3e50', fontSize: '1.2rem' }}>
-                  {test.name}
-                </Link>
+                {test.testType === 'premium' && (!user || !user.isPremium) ? (
+                  <span style={{ textDecoration: 'none', color: '#2c3e50', fontSize: '1.2rem', opacity: 0.7 }}>
+                    {test.name} 🔒
+                  </span>
+                ) : (
+                  <Link to={`/tests/${test.id}`} style={{ textDecoration: 'none', color: '#2c3e50', fontSize: '1.2rem' }}>
+                    {test.name}
+                  </Link>
+                )}
               </h3>
                 <div style={{ display: 'flex', gap: '2rem' }}>
                   <p style={{ margin: '0.25rem 0' }}>Category: <strong>{test.category.toUpperCase()}</strong></p>
@@ -314,24 +320,49 @@ const TestList = () => {
                   <p style={{ margin: '0.25rem 0' }}>Dictation WPM: <strong>{test.dictationWpm}</strong></p>
                   <p style={{ margin: '0.25rem 0' }}>Word Count: <strong>{test.wordCount}</strong></p>
                   <p style={{ margin: '0.25rem 0' }}>Audio duration: <strong>{formatTime(test.audioDuration)}</strong></p>
-
+                  {test.testType === 'free' && (
+                    <p style={{ margin: '0.25rem 0' }}><span style={{ backgroundColor: '#27ae60', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>FREE</span></p>
+                  )}
+                  {test.testType === 'premium' && (
+                    <p style={{ margin: '0.25rem 0' }}><span style={{ backgroundColor: '#8e44ad', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>PREMIUM</span></p>
+                  )}
+                  {test.testType === 'go-live' && (
+                    <p style={{ margin: '0.25rem 0' }}><span style={{ backgroundColor: '#3498db', color: '#fff', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>GO-LIVE</span></p>
+                  )}
                 </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <Link to={`/tests/${test.id}`}>
+              {test.testType === 'premium' && (!user || !user.isPremium) ? (
                 <button
                   style={{
-                    backgroundColor: '#3498db',
+                    backgroundColor: '#6c757d',
                     color: '#fff',
                     border: 'none',
                     padding: '0.5rem 1rem',
                     borderRadius: '4px',
-                    cursor: 'pointer'
+                    cursor: 'not-allowed',
+                    opacity: 0.6
                   }}
+                  disabled
                 >
-                  Play
+                  Premium
                 </button>
-              </Link>
+              ) : (
+                <Link to={`/tests/${test.id}`}>
+                  <button
+                    style={{
+                      backgroundColor: '#3498db',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Play
+                  </button>
+                </Link>
+              )}
               {user && user.isAdmin && (
                 <>
                   <button

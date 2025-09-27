@@ -36,6 +36,10 @@ module.exports = (sequelize) => {
     audioDuration: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    testType: {
+      type: DataTypes.ENUM('free', 'premium', 'go-live'),
+      defaultValue: 'go-live'
     }
   }, {
     tableName: 'tests',
